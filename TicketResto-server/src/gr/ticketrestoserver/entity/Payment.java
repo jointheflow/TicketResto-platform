@@ -18,7 +18,7 @@ public class Payment {
 	private Key id;
 	
 	@Persistent
-	private Key consumerId;
+	private Key providerId;
 	
 	@Persistent
 	private Key customerId;
@@ -38,12 +38,12 @@ public class Payment {
 	@Persistent
 	private Double restoAmount;
 
-	public Key getConsumerId() {
-		return consumerId;
+	public Key getProviderId() {
+		return providerId;
 	}
 
-	public void setConsumerId(Key consumerId) {
-		this.consumerId = consumerId;
+	public void setProviderId(Key providerId) {
+		this.providerId = providerId;
 	}
 
 	public Key getCustomerId() {
