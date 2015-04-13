@@ -6,7 +6,7 @@ xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
 http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" version="2.5">
 	<servlet>
 		<servlet-name>TicketResto_server</servlet-name>
-		<servlet-class>ticketrestoserver.TicketResto_serverServlet</servlet-class>
+		<servlet-class>gr.ticketrestoserver.servlet.TicketRestoServlet</servlet-class>
 	</servlet>
 	<servlet-mapping>
 		<servlet-name>TicketResto_server</servlet-name>

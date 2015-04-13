@@ -2,6 +2,7 @@ package gr.ticketrestoserver.entity;
 
 import java.util.Date;
 
+import javax.jdo.annotations.Column;
 import javax.jdo.annotations.IdGeneratorStrategy;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
@@ -18,10 +19,13 @@ public class Payment {
 	private Key id;
 	
 	@Persistent
-	private Key providerId;
+	@Column(name="id")
+    private Provider provider;
 	
 	@Persistent
-	private Key customerId;
+	@Column(name="id")
+	private Customer customer;
+	
 	
 	@Persistent
 	private Date paymentDate;
@@ -38,20 +42,20 @@ public class Payment {
 	@Persistent
 	private Double restoAmount;
 
-	public Key getProviderId() {
-		return providerId;
+	public Provider getProvider() {
+		return provider;
 	}
 
-	public void setProviderId(Key providerId) {
-		this.providerId = providerId;
+	public void setProvider(Provider provider) {
+		this.provider = provider;
 	}
 
-	public Key getCustomerId() {
-		return customerId;
+	public Customer getCustomer() {
+		return customer;
 	}
 
-	public void setCustomerId(Key customerId) {
-		this.customerId = customerId;
+	public void setCustomer(Customer customer) {
+		this.customer = customer;
 	}
 
 	public Date getPaymentDate() {
