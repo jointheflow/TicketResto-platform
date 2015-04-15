@@ -3,6 +3,8 @@ package gr.ticketrestoserver.test;
 import static org.junit.Assert.*;
 import gr.ticketrestoserver.dao.RestoDAO;
 import gr.ticketrestoserver.entity.Customer;
+import gr.ticketrestoserver.entity.Payment;
+import gr.ticketrestoserver.entity.Provider;
 
 import org.junit.After;
 import org.junit.Before;
@@ -40,6 +42,30 @@ public class TestCustomer {
 		
 		idCustomer = RestoDAO.addCustomer(customer);
 		assert(idCustomer != null);
+		System.out.println("customer "+idCustomer+" added!");
+		
+		Key idProvider = null;
+		
+		Provider provider = new Provider();
+		provider.setEmail("provider@gmail.com");
+		provider.setPassword("1234qwer");
+		
+		idProvider = RestoDAO.addProvider(provider);
+		assert(idProvider != null);
+		System.out.println("provider "+idProvider+" added!");
+		
+		Key idPayment = null;
+		
+		Payment payment = new Payment();
+		payment.setCustomer(customer);
+		payment.setProvider(provider);
+		payment.setAmount(new Double(200));
+		payment.setCashAmount(new Double(150));
+		payment.setTicketAmount(new Double(50));
+		
+		idPayment = RestoDAO.addPayment(payment);
+		assert(idPayment != null);
+		System.out.println("payment "+idPayment+" added!");
 	}
 
 }

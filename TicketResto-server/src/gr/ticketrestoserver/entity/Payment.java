@@ -19,11 +19,11 @@ public class Payment {
 	private Key id;
 	
 	@Persistent
-	@Column(name="id")
+	@Column(name="idProvider")
     private Provider provider;
 	
 	@Persistent
-	@Column(name="id")
+	@Column(name="idCustomer")
 	private Customer customer;
 	
 	
