@@ -7,10 +7,13 @@ import javax.jdo.annotations.IdGeneratorStrategy;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
+import javax.jdo.annotations.Unique;
+import javax.jdo.annotations.Uniques;
 
 import com.google.appengine.api.datastore.Key;
 
 @PersistenceCapable
+@Uniques({@Unique(name="PROVIDER_CUSTOMER", members={"provider","customer"})})
 public class Resto {
 	
 	@PrimaryKey
@@ -18,11 +21,11 @@ public class Resto {
 	private Key id;
 	
 	@Persistent
-	@Column(name="id")
+	@Column(name="id_provider")
     private Provider provider;
 	
 	@Persistent
-	@Column(name="id")
+	@Column(name="id_customer")
 	private Customer customer;
 	
 	

@@ -4,6 +4,7 @@ import javax.jdo.annotations.IdGeneratorStrategy;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
+import javax.jdo.annotations.Unique;
 
 import com.google.appengine.api.datastore.Key;
 
@@ -14,6 +15,7 @@ public class Customer {
 	@Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
 	private Key id;
 	
+	@Unique
 	@Persistent
 	private String email;
 	
