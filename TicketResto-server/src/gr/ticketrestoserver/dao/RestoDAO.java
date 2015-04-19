@@ -99,4 +99,15 @@ public class RestoDAO {
         }
         return restoId;
 	}
+	
+	
+	public static void getCustomerByEmail(String email) {
+		
+		
+	}
+	
+	public static void getProviderByEmail(String email) {
+		
+		
+	}
 }

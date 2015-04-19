@@ -54,37 +54,23 @@ public class TestEntityResto {
 		resto_new.setProvider(provider);
 		
 		
-		//add resto to the customer
+		//set up a customer
 		Key idCustomer = null;
 		
 		Customer customer = new Customer();
 		customer.setEmail("gr@gmail.com");
 		customer.setPassword("1234qwer");
+		
+		//add resto to customer
 		customer.updateRestoOfProvider(resto_new);
 		idCustomer = RestoDAO.addCustomer(customer);
 		assertTrue(idCustomer != null);
 		assertTrue(customer.getResti().size()>0);
 		System.out.println("customer "+idCustomer+" added!");
 		
-		/*
-		Set resti = customer.getResti();
-		System.out.println("resti "+ resti );
-		Iterator i = (Iterator)resti.iterator();
-		
-		while (i.hasNext()) {
-			Resto r = (Resto) i.next();
-			System.out.println(r.getAmount());
-			System.out.println(r.getId());
-			System.out.println(r.getProvider().getEmail());
-			System.out.println(r.getProvider().getId().getId());
-			assertTrue(r.getProvider() == provider);
-		}
-		*/
-		//idProvider = RestoDAO.addProvider(provider);
-		
-		//System.out.println("provider "+idProvider+" added!");
 		
 		
+		//retrieve the provider
 		
 	}
 

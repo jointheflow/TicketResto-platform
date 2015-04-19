@@ -36,7 +36,7 @@ public class TestEntityCustomer {
 	@Test
 	public void test() {
 		
-		//add resto to the customer
+		//add  customer
 		Key idCustomer = null;
 		
 		Customer customer = new Customer();
@@ -47,6 +47,18 @@ public class TestEntityCustomer {
 		assertTrue(idCustomer != null);
 		System.out.println("customer "+idCustomer+" added!");
 				
+		
+		//add the same customer with same email
+		Key idCustomer_2 = null;
+		
+		Customer customer_2 = new Customer();
+		customer_2.setEmail("gr@gmail.com");
+		customer_2.setPassword("1234qwer");
+		
+		idCustomer_2 = RestoDAO.addCustomer(customer_2);
+		//assertTrue(idCustomer_2 == null);
+		System.out.println("customer_2 "+idCustomer_2+" added!");
+		
 		
 	}
 
