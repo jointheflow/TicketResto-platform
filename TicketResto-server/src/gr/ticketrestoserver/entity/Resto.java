@@ -7,13 +7,11 @@ import javax.jdo.annotations.IdGeneratorStrategy;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
-import javax.jdo.annotations.Unique;
-import javax.jdo.annotations.Uniques;
+
 
 import com.google.appengine.api.datastore.Key;
 
 @PersistenceCapable
-@Uniques({@Unique(name="PROVIDER_CUSTOMER", members={"provider","customer"})})
 public class Resto {
 	
 	@PrimaryKey
@@ -24,11 +22,25 @@ public class Resto {
 	@Column(name="id_provider")
     private Provider provider;
 	
+	
 	@Persistent
-	@Column(name="id_customer")
-	private Customer customer;
+	private Date expirationDate;
+	
+	@Persistent
+	private Double amount;
+	
+	@Persistent
+	private String providerSignature;
 	
 	
+	public String getProviderSignature() {
+		return providerSignature;
+	}
+
+	public void setProviderSignature(String providerSignature) {
+		this.providerSignature = providerSignature;
+	}
+
 	public Provider getProvider() {
 		return provider;
 	}
@@ -36,14 +48,7 @@ public class Resto {
 	public void setProvider(Provider provider) {
 		this.provider = provider;
 	}
-
-	public Customer getCustomer() {
-		return customer;
-	}
-
-	public void setCustomer(Customer customer) {
-		this.customer = customer;
-	}
+	
 
 	public Date getExpirationDate() {
 		return expirationDate;
@@ -65,11 +70,7 @@ public class Resto {
 		return id;
 	}
 
-	@Persistent
-	private Date expirationDate;
 	
-	@Persistent
-	private Double amount;
 	
 	
 }

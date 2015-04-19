@@ -71,12 +71,12 @@ public class RestoDAO {
         try {
         	//retrieve resto instance by using the provider-customer key
         	Query query = pm.newQuery(Resto.class);
-    		query.setFilter("provider == provider_param && customer == customer_param");
-    		query.declareParameters("Provider provider_param, Customer customer_param");
+    		query.setFilter("provider == provider_param");
+    		//query.declareParameters("Provider provider_param");
 
     		//query.setOrdering("id DESC");
     		@SuppressWarnings("unchecked")
-    		List<Resto> result = (List<Resto>)query.execute(resto.getProvider(), resto.getCustomer());
+    		List<Resto> result = (List<Resto>)query.execute(resto.getProvider());
     		
     		if (!result.isEmpty()) {
     			restoObj = (Resto )result.get(0);
