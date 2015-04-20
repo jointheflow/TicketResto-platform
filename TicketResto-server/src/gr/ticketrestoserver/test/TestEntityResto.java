@@ -18,13 +18,56 @@ import com.google.appengine.tools.development.testing.LocalDatastoreServiceTestC
 import com.google.appengine.tools.development.testing.LocalServiceTestHelper;
 
 public class TestEntityResto {
+	
+	
+	private String testProviderEmailA="testProviderA@gmail.com";
+	private String testProviderEmailB="testProviderB@gmail.com";
+			
+	private String testCustomerEmail="testCustomer@gmail.com";
+	
+	private Double resto_pre_amount= new Double(222);
+	
 	private final LocalServiceTestHelper helper =  
 	        new LocalServiceTestHelper(new LocalDatastoreServiceTestConfig());  
 	
 	
 	@Before  
     public void setUp() {  
-        helper.setUp();          
+        helper.setUp();
+        //configuring providers and customer in the datastore
+        //set up providers
+  		
+        Key idProviderA = null;
+  		Provider testProviderA = new Provider();
+  		testProviderA.setEmail(testProviderEmailA);
+  		testProviderA.setPassword("1234qwer");
+  		idProviderA = RestoDAO.addProvider(testProviderA);
+  		System.out.println("providerA "+idProviderA+" set!"+testProviderA);
+        
+  		Key idProviderB = null;
+  		Provider testProviderB = new Provider();
+  		testProviderB.setEmail(testProviderEmailB);
+  		testProviderB.setPassword("1234qwer");
+  		idProviderB = RestoDAO.addProvider(testProviderB);
+  		System.out.println("providerB "+idProviderB+" set!"+testProviderB);
+  		
+  		//set up a customer with a resto of provider B already in place
+		Key idCustomer = null;
+		
+		Customer testCustomer = new Customer();
+		testCustomer.setEmail(testCustomerEmail);
+		testCustomer.setPassword("1234qwer");
+		//set up a resto		
+		Resto resto_new = new Resto();
+		resto_new.setAmount(resto_pre_amount);
+		//set the resto's provider
+		resto_new.setProvider(testProviderB);
+		
+		//add resto to the customer
+		testCustomer.updateRestoOfProvider(resto_new);
+		idCustomer = RestoDAO.addCustomer(testCustomer);
+		System.out.println("customer "+idCustomer+" added!"+testCustomer);
+  		
     }  
 	  
 	@After  
@@ -33,9 +76,9 @@ public class TestEntityResto {
     }  
 
 	
-	@Test
+	
 	public void test() {
-		
+		/*
 		//set up a provider
 		Key idProvider = null;
 		
@@ -71,7 +114,51 @@ public class TestEntityResto {
 		
 		
 		//retrieve the provider
+		*/
+	}
+	@Test
+	public void testNewRestoProviderA() {
+		//retrieve the providerA by email
+		Provider providerA = RestoDAO.getProviderByEmail(testProviderEmailA);
+		assertTrue(providerA!=null);
+		System.out.println("Find provider by email "+testProviderEmailA +" "+ providerA);
+		
+		//retrieve the customer by email
+		Customer customer = RestoDAO.getCustomerByEmail(testCustomerEmail);
+		assertTrue(customer != null);
+		System.out.println("Find customer by email "+testCustomerEmail+" "+ customer);
+		
+		//add resto to the customer for providerA
+		Resto resto = new Resto();
+		resto.setAmount(new Double(125));
+		resto.setProvider(providerA);
+		
+		customer.updateRestoOfProvider(resto);
+		
+		//update customer
+		RestoDAO.updateCustomer(customer);
+		
+		//assert
+		assertTrue(customer.getResti().size()>0);
+	}
+	
+	@Test
+	public void testUpdateRestoProviderB() {
+		//retrieve the providerA by email
+		Provider providerB = RestoDAO.getProviderByEmail(testProviderEmailB);
+		assertTrue(providerB!=null);
+		System.out.println("Find provider by email "+testProviderEmailB +" "+ providerB);
+		
+		//retrieve the customer by email
+		Customer customer = RestoDAO.getCustomerByEmail(testCustomerEmail);
+		assertTrue(customer != null);
+		System.out.println("Find customer by email "+testCustomerEmail+" "+ customer);
+		
+		//check resto prior update
+		Resto resto_pre = customer.getRestoOfProvider(providerB);
+		assertTrue(resto_pre.getAmount()==resto_pre_amount);
 		
 	}
+	
 
 }

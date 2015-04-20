@@ -1,9 +1,12 @@
 package gr.ticketrestoserver.entity;
 
 
-import java.util.HashSet;
+
+import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.Set;
+import java.util.List;
+
+
 
 import javax.jdo.annotations.Element;
 import javax.jdo.annotations.IdGeneratorStrategy;
@@ -29,9 +32,10 @@ public class Customer {
 	@Persistent
 	private String password;
 
-	@Persistent
-	@Element(column="CUSTOMER_ID")
-    private Set<Resto> resti = new HashSet<Resto>();
+	//@Persistent(mappedBy="customer")
+	//@Element(column="CUSTOMER_ID")
+    @Persistent
+	private List<Resto> resti = new ArrayList<Resto>();
 	
 			
 	/*Return a Resto instance of a provider passed as parameter if exits in the resti Set. Null otherwhise*/
@@ -62,7 +66,7 @@ public class Customer {
 		
 	}
 	
-	public Set<Resto> getResti() {
+	public List<Resto> getResti() {
 		
 		return resti;
 	}	

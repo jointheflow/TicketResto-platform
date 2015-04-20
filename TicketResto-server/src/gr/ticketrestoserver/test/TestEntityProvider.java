@@ -35,11 +35,11 @@ public class TestEntityProvider {
 	@Test
 	public void test() {
 		
-		
+		//add a provider
 		Key idProvider = null;
 		
 		Provider provider = new Provider();
-		provider.setEmail("gr@gmail.com");
+		provider.setEmail("pr@gmail.com");
 		provider.setPassword("1234qwer");
 		provider.setAddress("Via Sacco e Vanzetti 85");
 		provider.setCap("00172");
@@ -49,6 +49,20 @@ public class TestEntityProvider {
 		assertTrue(idProvider != null);
 		System.out.println("provider "+idProvider+" added!");
 				
+		
+		//add provider with same email
+		Key idProvider_2 = null;
+		
+		Provider provider_2 = new Provider();
+		provider_2.setEmail("pr@gmail.com");
+		provider_2.setPassword("1234qwer");
+		provider_2.setAddress("Via Sacco e Vanzetti 85");
+		provider_2.setCap("00172");
+		provider_2.setName("La fabbrica del Caffè snc");
+		
+		idProvider_2 = RestoDAO.addProvider(provider_2);
+		assertTrue(idProvider_2 == null);
+		System.out.println("provider "+idProvider+" not added!");
 		
 	}
 
