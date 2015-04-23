@@ -2,14 +2,14 @@ package gr.ticketrestoserver.entity;
 
 import java.util.Date;
 
-import javax.jdo.annotations.Column;
+
 import javax.jdo.annotations.IdGeneratorStrategy;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 
-
 import com.google.appengine.api.datastore.Key;
+import com.google.appengine.datanucleus.annotations.Unowned;
 
 @PersistenceCapable
 public class Resto {
@@ -18,11 +18,21 @@ public class Resto {
 	@Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
 	private Key id;
 	
-	@Persistent
-	@Column(name="id_provider")
-    private Provider provider;
+	//@Persistent
+	@Persistent(defaultFetchGroup="true")
+	@Unowned
+	private Provider provider;
 	
 	
+	//@Persistent
+	@Persistent(defaultFetchGroup="true")
+	@Unowned
+	private Customer customer;
+	
+	public Customer getCustomer() {
+		return customer;
+	}
+
 	@Persistent
 	private Date expirationDate;
 	
@@ -31,6 +41,7 @@ public class Resto {
 	
 	@Persistent
 	private String providerSignature;
+	
 	
 	
 	public String getProviderSignature() {
@@ -68,6 +79,11 @@ public class Resto {
 
 	public Key getId() {
 		return id;
+	}
+
+	public void setCustomer(Customer customer) {
+		
+		this.customer=customer;
 	}
 
 	

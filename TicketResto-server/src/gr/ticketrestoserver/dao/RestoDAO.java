@@ -2,6 +2,7 @@ package gr.ticketrestoserver.dao;
 
 
 
+
 import java.util.List;
 
 import gr.ticketrestoserver.dao.exception.UniqueConstraintViolationExcpetion;
@@ -11,8 +12,8 @@ import gr.ticketrestoserver.entity.Provider;
 import gr.ticketrestoserver.entity.Resto;
 import gr.ticketrestoserver.helper.DAOHelper;
 
+import javax.jdo.FetchGroup;
 import javax.jdo.PersistenceManager;
-
 import javax.jdo.Query;
 
 import com.google.appengine.api.datastore.Key;
@@ -43,6 +44,7 @@ public class RestoDAO {
 		PersistenceManager pm = DAOHelper.getPersistenceManagerFactory().getPersistenceManager();
         try {
             pm.makePersistent(customer);
+            
             
        	} finally {
             pm.close();
@@ -110,31 +112,22 @@ public class RestoDAO {
 		Resto restoObj = null;
 		PersistenceManager pm = DAOHelper.getPersistenceManagerFactory().getPersistenceManager();
         try {
-        	//retrieve resto instance by using the provider-customer key
-        	Query query = pm.newQuery(Resto.class);
-    		query.setFilter("provider == provider_param");
-    		//query.declareParameters("Provider provider_param");
-
-    		//query.setOrdering("id DESC");
-    		@SuppressWarnings("unchecked")
-    		List<Resto> result = (List<Resto>)query.execute(resto.getProvider());
-    		
-    		if (!result.isEmpty()) {
-    			restoObj = (Resto )result.get(0);
-    			//change the value of amount
-    			restoObj.setAmount(resto.getAmount());
-    			restoId = restoObj.getId();
-    		}
-    		else {
-    			//if not exists make persistence the new instance
-            	pm.makePersistent(resto);
-                restoId= resto.getId();
+        	//if resto has not an id make it persistent
+        	if (resto.getId() ==null) {
+        		pm.makePersistent(resto);
+        		restoId=resto.getId();
+        	}
+        	else {
+	        	//retrieve resto instance by using the provider-customer key
+	        	restoObj = pm.getObjectById(Resto.class, resto.getId());
+	        	//if not exists make persistence the new instance
+	        	if (restoObj == null)       	    			
+	            	pm.makePersistent(resto);
+	        	
+	        	restoId= restoObj.getId();
+        	}
+        	
     			
-    		}
-    		
-        	
-        	
-            
         } finally {
             pm.close();
         }
@@ -146,13 +139,15 @@ public class RestoDAO {
 		Customer customer = null;
 		PersistenceManager pm = DAOHelper.getPersistenceManagerFactory().getPersistenceManager();
 		try {
+			
 			Query query = pm.newQuery(Customer.class);
 			query.setFilter("email == email_p");
 			query.declareParameters("String email_p");
 			@SuppressWarnings({ "unchecked"})
 			List<Customer> result = (List<Customer>)query.execute(email);
-			if (!result.isEmpty())
+			if (!result.isEmpty()) {
 				customer = result.get(0);
+			}
 		 } finally {
 	            pm.close();
 	        }
@@ -176,4 +171,31 @@ public class RestoDAO {
 	        }
 	        return provider;
 	}
+	
+	public static Resto getResto(Customer customer, Provider provider) {
+		Resto resto = null;
+		PersistenceManager pm = DAOHelper.getPersistenceManagerFactory().getPersistenceManager();
+		try {
+			pm.getFetchPlan().setGroup(FetchGroup.ALL);
+			Query query = pm.newQuery(Resto.class);
+			//query.setFilter("customer == customer_p && provider == provider_p");
+			query.setFilter("provider == provider_p && customer == customer_p ");
+			query.declareParameters(Key.class.getName() + " provider_p, "+Key.class.getName()+" customer_p");
+			//query.declareParameters("String email_p");
+			@SuppressWarnings({ "unchecked"})
+			//List<Resto> result = (List<Resto>)query.execute(customer, provider);
+			List<Resto> result = (List<Resto>)query.execute(provider.getId(), customer.getId());
+			if (!result.isEmpty())
+				resto = result.get(0);
+			
+			
+		 } finally {
+	            pm.close();
+	        }
+	        return resto;
+		
+		
+	}
+	
+	
 }

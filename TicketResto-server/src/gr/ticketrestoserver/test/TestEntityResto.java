@@ -52,21 +52,25 @@ public class TestEntityResto {
   		System.out.println("providerB "+idProviderB+" set!"+testProviderB);
   		
   		//set up a customer with a resto of provider B already in place
-		Key idCustomer = null;
-		
+		Key idCustomer = null;	
 		Customer testCustomer = new Customer();
 		testCustomer.setEmail(testCustomerEmail);
 		testCustomer.setPassword("1234qwer");
-		//set up a resto		
-		Resto resto_new = new Resto();
-		resto_new.setAmount(resto_pre_amount);
-		//set the resto's provider
-		resto_new.setProvider(testProviderB);
-		
-		//add resto to the customer
-		testCustomer.updateRestoOfProvider(resto_new);
 		idCustomer = RestoDAO.addCustomer(testCustomer);
 		System.out.println("customer "+idCustomer+" added!"+testCustomer);
+		
+		
+		//set up a resto		
+		Key idResto = null;
+		Resto resto_new = new Resto();
+		resto_new.setAmount(resto_pre_amount);
+		//set the resto's provider and customer
+		resto_new.setProvider(testProviderB);
+		resto_new.setCustomer(testCustomer);
+		//persists resto_new
+		idResto = RestoDAO.updateResto(resto_new);
+		System.out.println("resto id:"+idResto+" provider id:"+resto_new.getProvider().getId()+" customer id:"+resto_new.getCustomer().getId()+" updated!"+resto_new);
+		
   		
     }  
 	  
@@ -128,20 +132,28 @@ public class TestEntityResto {
 		assertTrue(customer != null);
 		System.out.println("Find customer by email "+testCustomerEmail+" "+ customer);
 		
-		//add resto to the customer for providerA
-		Resto resto = new Resto();
-		resto.setAmount(new Double(125));
-		resto.setProvider(providerA);
+		//add resto to the customer for providerA.
+		//prior fecth a resto if exists
+		Resto resto = RestoDAO.getResto(customer, providerA);
+		//resto should not exists
+		assertTrue(resto==null);
 		
-		customer.updateRestoOfProvider(resto);
+		//create new resto
+		if (resto==null){
+			resto = new Resto();
+			resto.setAmount(new Double(125));
+			resto.setCustomer(customer);
+			resto.setProvider(providerA);
+			//update customer
+			RestoDAO.updateResto(resto);
+			assertTrue(resto.getAmount().equals(new Double(125)));
+			System.out.println("resto id:"+resto.getId()+" provider id:"+resto.getProvider().getId()+" customer id:"+resto.getCustomer().getId()+" updated!"+resto);
+		}
 		
-		//update customer
-		RestoDAO.updateCustomer(customer);
 		
-		//assert
-		assertTrue(customer.getResti().size()>0);
+		
 	}
-	
+	/*
 	@Test
 	public void testUpdateRestoProviderB() {
 		//retrieve the providerA by email
@@ -159,6 +171,6 @@ public class TestEntityResto {
 		assertTrue(resto_pre.getAmount()==resto_pre_amount);
 		
 	}
-	
+	*/
 
 }

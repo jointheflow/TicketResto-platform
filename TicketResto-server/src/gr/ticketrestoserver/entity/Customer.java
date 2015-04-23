@@ -1,14 +1,6 @@
 package gr.ticketrestoserver.entity;
 
 
-
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
-
-
-import javax.jdo.annotations.Element;
 import javax.jdo.annotations.IdGeneratorStrategy;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
@@ -32,27 +24,23 @@ public class Customer {
 	@Persistent
 	private String password;
 
-	//@Persistent(mappedBy="customer")
+	
 	//@Element(column="CUSTOMER_ID")
-    @Persistent
-	private List<Resto> resti = new ArrayList<Resto>();
+	//@Persistent
+	//@Persistent(mappedBy="parentCustomer")
+	//private List<Resto> resti;
 	
 			
-	/*Return a Resto instance of a provider passed as parameter if exits in the resti Set. Null otherwhise*/
-	public Resto getRestoOfProvider(Provider provider) {
-		Iterator<Resto> i = (Iterator<Resto>) resti.iterator();
-		while (i.hasNext()) {
-			Resto resto = (Resto) i.next();
-			if (resto.getProvider().getId()==provider.getId())
-				return resto;
-			
-		}
-		return null;
+	
+	
+	/*public void fetchResti(List<Resto> resti) {
+		this.resti = resti;
 	}
-	
+*/
 	/*Add the resto parameter if does not exists a resto defined with a provider. Otherwhise remove the resto found and add th resto passed
 	 * as parameter*/
-	public void updateRestoOfProvider(Resto resto) {
+	/*public void updateRestoOfProvider(Resto resto) {
+		if (resti == null) resti = new ArrayList<Resto>();
 		Resto restoCurrent = getRestoOfProvider(resto.getProvider());
 		if (restoCurrent == null)
 			resti.add(resto);
@@ -61,16 +49,13 @@ public class Customer {
 			resti.add(resto);
 			
 		}
-			
-				
-		
 	}
-	
-	public List<Resto> getResti() {
+	*/
+	/*public List<Resto> getResti() {
 		
 		return resti;
 	}	
-
+*/
 	public String getEmail() {
 		return email;
 	}
