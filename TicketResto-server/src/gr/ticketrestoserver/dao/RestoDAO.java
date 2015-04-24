@@ -3,18 +3,28 @@ package gr.ticketrestoserver.dao;
 
 
 
+import java.util.Date;
 import java.util.List;
 
+
+
+
+
+
+import gr.ticketrestoserver.dao.exception.InvalidTokenException;
+import gr.ticketrestoserver.dao.exception.InvalidTokenForUserException;
 import gr.ticketrestoserver.dao.exception.UniqueConstraintViolationExcpetion;
+import gr.ticketrestoserver.entity.AuthToken;
 import gr.ticketrestoserver.entity.Customer;
-import gr.ticketrestoserver.entity.Payment;
 import gr.ticketrestoserver.entity.Provider;
 import gr.ticketrestoserver.entity.Resto;
 import gr.ticketrestoserver.helper.DAOHelper;
 
 import javax.jdo.FetchGroup;
+import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
+
 
 import com.google.appengine.api.datastore.Key;
 
@@ -22,7 +32,7 @@ import com.google.appengine.api.datastore.Key;
 
 public class RestoDAO {
 	
-	
+	//TODO add check on mandatory field (ex. email, pwd) and manage exceptions
 	public static Key addCustomer(Customer customer) {
 		Key customerId=null;
 		PersistenceManager pm = DAOHelper.getPersistenceManagerFactory().getPersistenceManager();
@@ -39,7 +49,7 @@ public class RestoDAO {
         return customerId;
 	}
 	
-	
+	//TODO add check on mandatory field (ex. email, pwd) and manage exceptions
 	public static void updateCustomer(Customer customer) {
 		PersistenceManager pm = DAOHelper.getPersistenceManagerFactory().getPersistenceManager();
         try {
@@ -65,7 +75,7 @@ public class RestoDAO {
 	}
 	
 	
-	
+	//TODO add check on mandatory field (ex. email, pwd) and manage exceptions
 	public static Key addProvider(Provider provider) {
 		Key providerId=null;
 		PersistenceManager pm = DAOHelper.getPersistenceManagerFactory().getPersistenceManager();
@@ -94,19 +104,7 @@ public class RestoDAO {
 		
 		}
 	
-	public static Key addPayment(Payment payment) {
-		Key PaymentId=null;
-		PersistenceManager pm = DAOHelper.getPersistenceManagerFactory().getPersistenceManager();
-        try {
-            pm.makePersistent(payment);
-            PaymentId= payment.getId();
-        } finally {
-            pm.close();
-        }
-        return PaymentId;
-	}
-	
-	
+		
 	public static Key updateResto(Resto resto) {
 		Key restoId=null;
 		Resto restoObj = null;
@@ -195,6 +193,46 @@ public class RestoDAO {
 	        return resto;
 		
 		
+	}
+	
+	public static Key addAuthToken(AuthToken token) {
+		Key tokenId = null;
+		PersistenceManager pm = DAOHelper.getPersistenceManagerFactory().getPersistenceManager();
+		try {
+    
+        	pm.makePersistent(token);
+            tokenId= token.getTokenId();
+        } catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} finally {
+            pm.close();
+        }
+       
+        return tokenId;
+	}
+	
+	/*Check if token exists, is not expired and is associated to the userEmail*/
+	public static void checkAuthToken(Key tokenId, String userEmail) throws InvalidTokenException, InvalidTokenForUserException {
+		AuthToken token=null;
+		PersistenceManager pm = DAOHelper.getPersistenceManagerFactory().getPersistenceManager();
+		try {
+			token = pm.getObjectById(AuthToken.class, tokenId);
+			
+			
+			
+			if (!token.getUserEmail().equals(userEmail)) throw new InvalidTokenForUserException("Token invalid "+tokenId);
+			
+			if (new Date().after(token.getExpiration())) throw new InvalidTokenException("Token is expired "+tokenId);
+		
+		}catch (JDOObjectNotFoundException e)  {
+		
+			throw new InvalidTokenException("Token invalid "+tokenId);
+		
+		}finally {
+			pm.close();
+			
+		}
 	}
 	
 	
