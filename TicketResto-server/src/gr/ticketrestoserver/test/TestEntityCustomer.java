@@ -1,11 +1,12 @@
 package gr.ticketrestoserver.test;
 
 import static org.junit.Assert.*;
-
-
-
 import gr.ticketrestoserver.dao.RestoDAO;
+import gr.ticketrestoserver.dao.exception.UniqueConstraintViolationExcpetion;
+import gr.ticketrestoserver.dao.exception.WrongUserOrPasswordException;
 import gr.ticketrestoserver.entity.Customer;
+
+
 
 
 
@@ -43,9 +44,15 @@ public class TestEntityCustomer {
 		customer.setEmail("gr@gmail.com");
 		customer.setPassword("1234qwer");
 		
-		idCustomer = RestoDAO.addCustomer(customer);
-		assertTrue(idCustomer != null);
-		System.out.println("customer "+idCustomer+" added!");
+		try {
+			idCustomer = RestoDAO.addCustomer(customer);
+			assertTrue(idCustomer != null);
+			System.out.println("customer "+idCustomer+" added!");
+		} catch (UniqueConstraintViolationExcpetion e2) {
+			// TODO Auto-generated catch block
+			e2.printStackTrace();
+		}
+		
 				
 		
 		//try to add the same customer with same email
@@ -55,11 +62,52 @@ public class TestEntityCustomer {
 		customer_2.setEmail("gr@gmail.com");
 		customer_2.setPassword("1234qwer");
 		
-		idCustomer_2 = RestoDAO.addCustomer(customer_2);
-		assertTrue(idCustomer_2 == null);
-		System.out.println("customer_2 "+idCustomer_2+" not added!");
+		try {
+			idCustomer_2 = RestoDAO.addCustomer(customer_2);
+		} catch (UniqueConstraintViolationExcpetion e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+			assertTrue(idCustomer_2 == null);
+			System.out.println("customer_2 "+idCustomer_2+" not added!");
+			
+		}
 		
-				
+		
+		//get a user with correct email and password
+		Customer customer_3;
+		try {
+			customer_3 = RestoDAO.getCustomerByEmail("gr@gmail.com", "1234qwer");
+			assertTrue(customer_3 != null);
+		} catch (WrongUserOrPasswordException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		
+		//get a user with wrong email and correct password
+		Customer customer_4= null;
+		try {
+			customer_4 = RestoDAO.getCustomerByEmail("grrrrr@gmail.com", "1234qwer");
+			
+		} catch (WrongUserOrPasswordException e) {
+			// TODO Auto-generated catch block
+			assertTrue(customer_4 == null);
+			e.printStackTrace();
+		}
+		
+		
+		//get a user with correct email and wrong password
+		Customer customer_5= null;
+		try {
+			customer_5 = RestoDAO.getCustomerByEmail("gr@gmail.com", "345qwer");
+			
+		} catch (WrongUserOrPasswordException e) {
+			// TODO Auto-generated catch block
+			assertTrue(customer_5 == null);
+			e.printStackTrace();
+		}
+		
+		
 	}
 
 }

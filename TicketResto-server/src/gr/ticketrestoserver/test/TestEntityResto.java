@@ -1,11 +1,10 @@
 package gr.ticketrestoserver.test;
 
 import static org.junit.Assert.*;
-
-
 import gr.ticketrestoserver.dao.RestoDAO;
+import gr.ticketrestoserver.dao.exception.UniqueConstraintViolationExcpetion;
+import gr.ticketrestoserver.dao.exception.WrongUserOrPasswordException;
 import gr.ticketrestoserver.entity.Customer;
-
 import gr.ticketrestoserver.entity.Provider;
 import gr.ticketrestoserver.entity.Resto;
 
@@ -56,7 +55,12 @@ public class TestEntityResto {
 		Customer testCustomer = new Customer();
 		testCustomer.setEmail(testCustomerEmail);
 		testCustomer.setPassword("1234qwer");
-		idCustomer = RestoDAO.addCustomer(testCustomer);
+		try {
+			idCustomer = RestoDAO.addCustomer(testCustomer);
+		} catch (UniqueConstraintViolationExcpetion e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		System.out.println("customer "+idCustomer+" added!"+testCustomer);
 		
 		
@@ -90,7 +94,13 @@ public class TestEntityResto {
 		System.out.println("Find provider by email "+testProviderEmailA +" "+ providerA);
 		
 		//retrieve the customer by email
-		Customer customer = RestoDAO.getCustomerByEmail(testCustomerEmail);
+		Customer customer=null;
+		try {
+			customer = RestoDAO.getCustomerByEmail(testCustomerEmail, "1234qwer");
+		} catch (WrongUserOrPasswordException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		assertTrue(customer != null);
 		System.out.println("Find customer by email "+testCustomerEmail+" "+ customer);
 		
@@ -124,7 +134,13 @@ public class TestEntityResto {
 		System.out.println("Find provider by email "+testProviderEmailB +" "+ providerB);
 		
 		//retrieve the customer by email
-		Customer customer = RestoDAO.getCustomerByEmail(testCustomerEmail);
+		Customer customer=null;
+		try {
+			customer = RestoDAO.getCustomerByEmail(testCustomerEmail, "1234qwer");
+		} catch (WrongUserOrPasswordException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		assertTrue(customer != null);
 		System.out.println("Find customer by email "+testCustomerEmail+" "+ customer);
 		

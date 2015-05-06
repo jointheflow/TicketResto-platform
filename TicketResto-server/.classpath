@@ -4,7 +4,11 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="con" path="com.google.appengine.eclipse.core.GAE_CONTAINER"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
-	<classpathentry kind="lib" path="C:/myGianluca/Programmi/eclipse-library/appengine-api-stubs-1.9.18.jar"/>
-	<classpathentry kind="lib" path="C:/myGianluca/Programmi/eclipse-library/appengine-testing-1.9.18.jar"/>
+	<classpathentry kind="lib" path="ext/lib/Junit-gae-eidition/appengine-api-stubs-1.9.18.jar"/>
+	<classpathentry kind="lib" path="ext/lib/Junit-gae-eidition/appengine-testing-1.9.18.jar"/>
+	<classpathentry exported="true" kind="lib" path="ext/lib/restlet-gae-edition/org.restlet.ext.json.jar"/>
+	<classpathentry exported="true" kind="lib" path="ext/lib/restlet-gae-edition/org.restlet.ext.servlet.jar"/>
+	<classpathentry exported="true" kind="lib" path="ext/lib/restlet-gae-edition/org.restlet.jar"/>
+	<classpathentry exported="true" kind="lib" path="ext/lib/Json-ext/java-json.jar"/>
 	<classpathentry kind="output" path="war/WEB-INF/classes"/>
 </classpath>

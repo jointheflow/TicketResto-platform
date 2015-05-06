@@ -11,9 +11,11 @@ import java.util.List;
 
 
 
+
 import gr.ticketrestoserver.dao.exception.InvalidTokenException;
 import gr.ticketrestoserver.dao.exception.InvalidTokenForUserException;
 import gr.ticketrestoserver.dao.exception.UniqueConstraintViolationExcpetion;
+import gr.ticketrestoserver.dao.exception.WrongUserOrPasswordException;
 import gr.ticketrestoserver.entity.AuthToken;
 import gr.ticketrestoserver.entity.Customer;
 import gr.ticketrestoserver.entity.Provider;
@@ -26,6 +28,7 @@ import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
 
 
+
 import com.google.appengine.api.datastore.Key;
 
 
@@ -33,16 +36,14 @@ import com.google.appengine.api.datastore.Key;
 public class RestoDAO {
 	
 	//TODO add check on mandatory field (ex. email, pwd) and manage exceptions
-	public static Key addCustomer(Customer customer) {
+	public static Key addCustomer(Customer customer) throws UniqueConstraintViolationExcpetion {
 		Key customerId=null;
 		PersistenceManager pm = DAOHelper.getPersistenceManagerFactory().getPersistenceManager();
         try {
             checkUniqueConstraintCustomer(pm, customer);
         	pm.makePersistent(customer);
             customerId= customer.getId();
-        } catch (UniqueConstraintViolationExcpetion e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+        
 		} finally {
             pm.close();
         }
@@ -50,10 +51,11 @@ public class RestoDAO {
 	}
 	
 	//TODO add check on mandatory field (ex. email, pwd) and manage exceptions
-	public static void updateCustomer(Customer customer) {
+	public static void updateCustomer(Customer customer) throws UniqueConstraintViolationExcpetion {
 		PersistenceManager pm = DAOHelper.getPersistenceManagerFactory().getPersistenceManager();
         try {
-            pm.makePersistent(customer);
+        	checkUniqueConstraintCustomer(pm, customer);
+        	pm.makePersistent(customer);
             
             
        	} finally {
@@ -133,7 +135,7 @@ public class RestoDAO {
 	}
 	
 	
-	public static Customer getCustomerByEmail(String email) {
+	public static Customer getCustomerByEmail(String email, String password) throws WrongUserOrPasswordException {
 		Customer customer = null;
 		PersistenceManager pm = DAOHelper.getPersistenceManagerFactory().getPersistenceManager();
 		try {
@@ -145,11 +147,15 @@ public class RestoDAO {
 			List<Customer> result = (List<Customer>)query.execute(email);
 			if (!result.isEmpty()) {
 				customer = result.get(0);
+				if (!(customer.getPassword().equals(password)))  throw new WrongUserOrPasswordException("Wrong email user or password");
+			}else {
+				throw new WrongUserOrPasswordException("Wrong email user or password");
+				
 			}
 		 } finally {
 	            pm.close();
 	        }
-	        return customer;
+	     return customer;
 		
 	}
 	
