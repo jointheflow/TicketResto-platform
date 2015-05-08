@@ -12,8 +12,6 @@ import gr.ticketrestoserver.entity.Customer;
 
 import java.util.logging.Logger;
 
-import com.google.appengine.labs.repackaged.org.json.JSONException;
-import com.google.appengine.labs.repackaged.org.json.JSONObject;
 
 
 import org.restlet.representation.Representation;
@@ -48,7 +46,7 @@ public class CustomerResource<K> extends ServerResource{
 	        //get parameters
 	        String customerEmail = form.getFirstValue("email");
 	        //TODO md5 conversion
-	        String customerPwd = form.getFirstValue("pwd");
+	        String customerPwd = form.getFirstValue("password");
 	        
 	        //create customer entity
 	        Customer customer = new Customer();
@@ -57,22 +55,13 @@ public class CustomerResource<K> extends ServerResource{
 	        
 	        RestoDAO.addCustomer(customer);
 	        	        	        
-			JsonRepresentation representation= new JsonRepresentation(toJSON(customer));
+			JsonRepresentation representation= new JsonRepresentation(customer);
 			setStatus(Status.SUCCESS_CREATED);
 			representation.setIndenting(true);
 			return representation;
 			
 				
-		}catch (JSONException ej) {
-			setStatus(Status.SERVER_ERROR_INTERNAL);
-			ErrorResource error = new ErrorResource();
-			error.setErrorCode(ErrorResource.SERIALIZING_JSON_ERROR);
-			error.setErrorMessage("Internal server error crearting json response");
-			JsonRepresentation errorRepresentation = new JsonRepresentation(error);
-			return errorRepresentation;
-			
-				
-		} catch (RuntimeException r){
+		}catch (RuntimeException r){
 			setStatus(Status.SERVER_ERROR_INTERNAL);
 			ErrorResource error = new ErrorResource();
 			error.setErrorCode(ErrorResource.IO_ERROR);
@@ -92,7 +81,7 @@ public class CustomerResource<K> extends ServerResource{
    }
 	
 		/*Return json rapresentation of the customer resource*/
-		private JSONObject toJSON(Customer customer) throws JSONException {
+		/*private JSONObject toJSON(Customer customer) throws JSONException {
 		
 			JSONObject jsonobj = new JSONObject();
 			jsonobj.put("email", customer.getEmail());
@@ -100,8 +89,8 @@ public class CustomerResource<K> extends ServerResource{
 			jsonobj.put("id", customer.getId().toString());
 			
 		return jsonobj;
-	}
-		/*Get customer basing on email and password parameters*/
+	}*/
+		/*Get customer basing on email and password parameters, also return all Resto associated */
 		@Get("json")
 		public Representation GET(){
 			//create json response
@@ -113,23 +102,21 @@ public class CustomerResource<K> extends ServerResource{
 				
 				log.info("start GET for Customer");
 			
+				//get customer
 				Customer customer = RestoDAO.getCustomerByEmail(p_email, p_password);
 				
+				
+				//get all Resto of customer
+				RestoDAO.
+				
 				if (customer !=null)	{
-					representation= new JsonRepresentation(toJSON(customer));
+					representation= new JsonRepresentation(customer);
 					representation.setIndenting(true);
 				}
 				return representation;
 				
 			
-			}catch (JSONException ej) {
-				setStatus(Status.SERVER_ERROR_INTERNAL);
-				ErrorResource error = new ErrorResource();
-				error.setErrorCode(ErrorResource.SERIALIZING_JSON_ERROR);
-				error.setErrorMessage("Internal server error crearting json response");
-				JsonRepresentation errorRepresentation = new JsonRepresentation(error);
-				return errorRepresentation;
-			} catch (WrongUserOrPasswordException e) {
+			}catch (WrongUserOrPasswordException e) {
 				setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
 				ErrorResource error = new ErrorResource();
 				error.setErrorCode(ErrorResource.WRONG_USER_OR_PASSWORD);

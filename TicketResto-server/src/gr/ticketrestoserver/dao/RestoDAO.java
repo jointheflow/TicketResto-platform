@@ -176,6 +176,7 @@ public class RestoDAO {
 	        return provider;
 	}
 	
+	
 	public static Resto getResto(Customer customer, Provider provider) {
 		Resto resto = null;
 		PersistenceManager pm = DAOHelper.getPersistenceManagerFactory().getPersistenceManager();
@@ -200,6 +201,30 @@ public class RestoDAO {
 		
 		
 	}
+	
+	public static List<Resto> getResto(Customer customer) {
+		List<Resto> result;
+		PersistenceManager pm = DAOHelper.getPersistenceManagerFactory().getPersistenceManager();
+		try {
+			pm.getFetchPlan().setGroup(FetchGroup.ALL);
+			Query query = pm.newQuery(Resto.class);
+			
+			query.setFilter("customer == customer_p ");
+			query.declareParameters(Key.class.getName()+" customer_p");
+			//query.declareParameters("String email_p");
+			@SuppressWarnings({ "unchecked"})
+			List<Resto> tmpResult = (List<Resto>)query.execute(customer.getId());
+			//restoList = (List<Resto>)query.execute(customer.getId());
+			result = tmpResult;
+			
+		 } finally {
+	         pm.close();
+	         
+	     }
+		return result;   
+			
+	}
+	
 	
 	public static Key addAuthToken(AuthToken token) {
 		Key tokenId = null;
