@@ -19,7 +19,8 @@ public class TicketRestoApplication extends Application {
         Router router = new Router(getContext());
         
         // Defines a route for the resource Customer  
-        router.attach("/customer", gr.ticketrestoserver.rest.resource.CustomerResource.class);  
+        router.attach("/customer", gr.ticketrestoserver.rest.resource.CustomerResource.class); 
+        router.attach("/customer/login", gr.ticketrestoserver.rest.resource.LoginResource.class); 
         
         //router.attach("/media", MediaResource.class);
         // Defines a route for the resource "item"  

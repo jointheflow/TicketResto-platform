@@ -1,18 +1,18 @@
 package gr.ticketrestoserver.rest.resource;
 
-
-
 import gr.ticketrestoserver.dao.RestoDAO;
 import gr.ticketrestoserver.dao.exception.UniqueConstraintViolationExcpetion;
 import gr.ticketrestoserver.dao.exception.WrongUserOrPasswordException;
+import gr.ticketrestoserver.entity.AuthToken;
 import gr.ticketrestoserver.entity.Customer;
+import gr.ticketrestoserver.helper.UtilHelper;
 
-
-
-
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 import java.util.logging.Logger;
-
-
 
 import org.restlet.representation.Representation;
 import org.restlet.resource.*; 
@@ -106,8 +106,20 @@ public class CustomerResource<K> extends ServerResource{
 				Customer customer = RestoDAO.getCustomerByEmail(p_email, p_password);
 				
 				
-				//get all Resto of customer
-				RestoDAO.
+				//create an auth Token
+				AuthToken token = new AuthToken();
+				//set an infinite expiration 
+				token.setExpiration(UtilHelper.getExpiration30Minute());
+				token.setUserEmail(customer.getEmail());
+				RestoDAO.addAuthToken(token);
+				
+				//set all Resto of customer
+				customer.setResti(RestoDAO.getResto(customer));
+				
+				//set authToken and resto list to the customer
+				customer.setToken(token);
+				
+				//return the customer representation
 				
 				if (customer !=null)	{
 					representation= new JsonRepresentation(customer);
