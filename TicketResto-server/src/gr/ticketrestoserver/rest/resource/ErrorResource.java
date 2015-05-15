@@ -8,6 +8,7 @@ public class ErrorResource {
 	public static final int IO_ERROR = -5;
 	public static final int UNIQUE_CONSTRAINT_VIOLATION = -6;
 	public static final int WRONG_USER_OR_PASSWORD = -7;
+	public static final int MANDATORY_FIELD_MISSING = -8;
 	
 	
 	private int errorCode;

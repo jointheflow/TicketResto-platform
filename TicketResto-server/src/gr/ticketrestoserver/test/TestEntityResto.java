@@ -2,11 +2,12 @@ package gr.ticketrestoserver.test;
 
 import static org.junit.Assert.*;
 import gr.ticketrestoserver.dao.RestoDAO;
+import gr.ticketrestoserver.dao.entity.Customer;
+import gr.ticketrestoserver.dao.entity.Provider;
+import gr.ticketrestoserver.dao.entity.Resto;
+import gr.ticketrestoserver.dao.exception.MandatoryFieldException;
 import gr.ticketrestoserver.dao.exception.UniqueConstraintViolationExcpetion;
 import gr.ticketrestoserver.dao.exception.WrongUserOrPasswordException;
-import gr.ticketrestoserver.entity.Customer;
-import gr.ticketrestoserver.entity.Provider;
-import gr.ticketrestoserver.entity.Resto;
 
 import org.junit.After;
 import org.junit.Before;
@@ -58,6 +59,9 @@ public class TestEntityResto {
 		try {
 			idCustomer = RestoDAO.addCustomer(testCustomer);
 		} catch (UniqueConstraintViolationExcpetion e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (MandatoryFieldException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}

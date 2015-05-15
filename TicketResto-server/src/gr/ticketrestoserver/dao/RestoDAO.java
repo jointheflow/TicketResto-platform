@@ -12,20 +12,25 @@ import java.util.List;
 
 
 
+
+
+import gr.ticketrestoserver.dao.entity.AuthToken;
+import gr.ticketrestoserver.dao.entity.Customer;
+import gr.ticketrestoserver.dao.entity.Provider;
+import gr.ticketrestoserver.dao.entity.Resto;
 import gr.ticketrestoserver.dao.exception.InvalidTokenException;
 import gr.ticketrestoserver.dao.exception.InvalidTokenForUserException;
+import gr.ticketrestoserver.dao.exception.MandatoryFieldException;
 import gr.ticketrestoserver.dao.exception.UniqueConstraintViolationExcpetion;
 import gr.ticketrestoserver.dao.exception.WrongUserOrPasswordException;
-import gr.ticketrestoserver.entity.AuthToken;
-import gr.ticketrestoserver.entity.Customer;
-import gr.ticketrestoserver.entity.Provider;
-import gr.ticketrestoserver.entity.Resto;
 import gr.ticketrestoserver.helper.DAOHelper;
 
 import javax.jdo.FetchGroup;
 import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
+
+
 
 
 
@@ -36,11 +41,12 @@ import com.google.appengine.api.datastore.Key;
 public class RestoDAO {
 	
 	//TODO add check on mandatory field (ex. email, pwd) and manage exceptions
-	public static Key addCustomer(Customer customer) throws UniqueConstraintViolationExcpetion {
+	public static Key addCustomer(Customer customer) throws UniqueConstraintViolationExcpetion, MandatoryFieldException {
 		Key customerId=null;
 		PersistenceManager pm = DAOHelper.getPersistenceManagerFactory().getPersistenceManager();
         try {
-            checkUniqueConstraintCustomer(pm, customer);
+            checkMandatoryConstraintCustomer(customer);
+        	checkUniqueConstraintCustomer(pm, customer);
         	pm.makePersistent(customer);
             customerId= customer.getId();
         
@@ -76,6 +82,12 @@ public class RestoDAO {
 	
 	}
 	
+	//check mandatory field constraint (email and password  on Customer entity)
+	private static void checkMandatoryConstraintCustomer(Customer customer) throws MandatoryFieldException {
+		if (customer.getEmail() == null || customer.getPassword()==null)
+				throw new MandatoryFieldException("email and password are mandatory!");
+		
+	}
 	
 	//TODO add check on mandatory field (ex. email, pwd) and manage exceptions
 	public static Key addProvider(Provider provider) {

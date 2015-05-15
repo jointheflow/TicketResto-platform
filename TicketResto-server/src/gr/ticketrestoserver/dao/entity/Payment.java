@@ -1,4 +1,4 @@
-package gr.ticketrestoserver.entity;
+package gr.ticketrestoserver.dao.entity;
 
 import java.util.Date;
 

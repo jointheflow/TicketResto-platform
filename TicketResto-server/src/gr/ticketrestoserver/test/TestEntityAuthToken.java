@@ -9,9 +9,9 @@ import java.util.Date;
 import java.util.Locale;
 
 import gr.ticketrestoserver.dao.RestoDAO;
+import gr.ticketrestoserver.dao.entity.AuthToken;
 import gr.ticketrestoserver.dao.exception.InvalidTokenException;
 import gr.ticketrestoserver.dao.exception.InvalidTokenForUserException;
-import gr.ticketrestoserver.entity.AuthToken;
 
 import org.junit.After;
 import org.junit.Before;

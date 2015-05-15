@@ -10,8 +10,8 @@ all necessary filed to be send to the app layer in the json format.
 A.1) Customer signup
 POST /customer/signup (email, password) return CustomerDTO with TokenDTO
 
-A.2) Customer login
-GET /customer/login (email, password) return CustomerDTO with TokenDTO and List of RestoDTO
+V A.2) Customer login
+  GET /customer/login (email, password) return CustomerDTO with TokenDTO and List of RestoDTO
 
 A.3) Customer update 
 

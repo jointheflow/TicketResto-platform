@@ -1,15 +1,15 @@
 package gr.ticketrestoserver.rest.resource;
 
 import gr.ticketrestoserver.dao.RestoDAO;
+import gr.ticketrestoserver.dao.entity.AuthToken;
+import gr.ticketrestoserver.dao.entity.Customer;
+import gr.ticketrestoserver.dao.entity.Provider;
+import gr.ticketrestoserver.dao.entity.Resto;
 import gr.ticketrestoserver.dao.exception.WrongUserOrPasswordException;
 import gr.ticketrestoserver.dto.CustomerDTO;
 import gr.ticketrestoserver.dto.ProviderDTO;
 import gr.ticketrestoserver.dto.RestoDTO;
 import gr.ticketrestoserver.dto.TokenDTO;
-import gr.ticketrestoserver.entity.AuthToken;
-import gr.ticketrestoserver.entity.Customer;
-import gr.ticketrestoserver.entity.Resto;
-import gr.ticketrestoserver.entity.Provider;
 import gr.ticketrestoserver.helper.UtilHelper;
 
 import java.util.ArrayList;
@@ -24,8 +24,8 @@ import org.restlet.ext.json.*;
 
 
 
-public class LoginResource<K> extends ServerResource{
-	private static final Logger log = Logger.getLogger(LoginResource.class.getName());
+public class CustomerLoginResource<K> extends ServerResource{
+	private static final Logger log = Logger.getLogger(CustomerLoginResource.class.getName());
 	
 	
 		/*Get customer basing on email and password parameters, also return all Resto associated */

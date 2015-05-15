@@ -1,15 +1,15 @@
-package gr.ticketrestoserver.entity;
+package gr.ticketrestoserver.dao.entity;
 
 
-import java.util.List;
+
 
 import javax.jdo.annotations.IdGeneratorStrategy;
-import javax.jdo.annotations.NotPersistent;
+
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 import javax.jdo.annotations.Unique;
-import javax.persistence.Transient;
+
 
 import com.google.appengine.api.datastore.Key;
 
@@ -29,29 +29,6 @@ public class Customer {
 	private String password;
 
 	
-	@NotPersistent
-	private AuthToken token;
-	
-	@NotPersistent
-	private List<Resto> resti;
-	
-	
-	
-	public AuthToken getToken() {
-		return token;
-	}
-
-	public void setToken(AuthToken token) {
-		this.token = token;
-	}
-
-	public List<Resto> getResti() {
-		return resti;
-	}
-
-	public void setResti(List<Resto> resti) {
-		this.resti = resti;
-	}
 
 	public String getEmail() {
 		return email;

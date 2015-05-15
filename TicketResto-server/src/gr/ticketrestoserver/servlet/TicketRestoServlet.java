@@ -2,9 +2,9 @@ package gr.ticketrestoserver.servlet;
 
 
 import gr.ticketrestoserver.dao.RestoDAO;
-import gr.ticketrestoserver.entity.Customer;
-import gr.ticketrestoserver.entity.Provider;
-import gr.ticketrestoserver.entity.Resto;
+import gr.ticketrestoserver.dao.entity.Customer;
+import gr.ticketrestoserver.dao.entity.Provider;
+import gr.ticketrestoserver.dao.entity.Resto;
 
 import java.io.IOException;
 
@@ -39,7 +39,7 @@ public class TicketRestoServlet extends HttpServlet {
 	  		System.out.println("providerB "+idProviderB+" set!"+testProviderB);
 	  		
 	  		//set up a customer with a resto of provider B already in place
-			Key idCustomer = null;
+			//Key idCustomer = null;
 			
 			Customer testCustomer = new Customer();
 			testCustomer.setEmail(testCustomerEmail);

@@ -1,11 +1,9 @@
-package gr.ticketrestoserver.entity;
+package gr.ticketrestoserver.dao.entity;
 
 
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
+
 import java.util.Date;
-import java.util.Locale;
+
 
 import javax.jdo.annotations.IdGeneratorStrategy;
 import javax.jdo.annotations.PersistenceCapable;

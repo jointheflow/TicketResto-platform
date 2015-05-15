@@ -1,4 +1,4 @@
-package gr.ticketrestoserver.entity;
+package gr.ticketrestoserver.dao.entity;
 
 import javax.jdo.annotations.IdGeneratorStrategy;
 import javax.jdo.annotations.PersistenceCapable;

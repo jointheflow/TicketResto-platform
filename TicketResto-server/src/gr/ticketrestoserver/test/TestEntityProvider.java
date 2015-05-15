@@ -6,7 +6,7 @@ import gr.ticketrestoserver.dao.RestoDAO;
 
 
 
-import gr.ticketrestoserver.entity.Provider;
+import gr.ticketrestoserver.dao.entity.Provider;
 
 import org.junit.After;
 import org.junit.Before;
