@@ -3,6 +3,8 @@ package gr.ticketrestoserver.rest.resource;
 import gr.ticketrestoserver.dao.RestoDAO;
 import gr.ticketrestoserver.dao.entity.AuthToken;
 import gr.ticketrestoserver.dao.entity.Customer;
+import gr.ticketrestoserver.dao.exception.InvalidTokenException;
+import gr.ticketrestoserver.dao.exception.InvalidTokenForUserException;
 import gr.ticketrestoserver.dao.exception.MandatoryFieldException;
 import gr.ticketrestoserver.dao.exception.UniqueConstraintViolationExcpetion;
 import gr.ticketrestoserver.dto.CustomerDTO;
@@ -21,8 +23,8 @@ import org.restlet.ext.json.*;
 
 
 
-public class CustomerSignupResource<K> extends ServerResource{
-	private static final Logger log = Logger.getLogger(CustomerSignupResource.class.getName());
+public class CustomerUpdateResource<K> extends ServerResource{
+	private static final Logger log = Logger.getLogger(CustomerUpdateResource.class.getName());
 	
 	/*Create a new Customer*/
 	@Post
@@ -41,20 +43,27 @@ public class CustomerSignupResource<K> extends ServerResource{
 	        } 
 	        
 	        //get parameters
-	        String customerEmail = form.getFirstValue("email");
+	        String p_customerEmail = form.getFirstValue("email");
 	        //TODO md5 conversion
-	        String customerPwd = form.getFirstValue("password");
+	        String p_customerPwd = form.getFirstValue("password");
+	        String p_customerId = form.getFirstValue("id");
+	        String p_token= form.getFirstValue("token");
+	        
+	        //check if token exists
+	        RestoDAO.checkAuthToken(new Long(p_token), p_customerEmail);
 	        
 	       
 	        //create customer entity
 	        Customer customer = new Customer();
-	        customer.setEmail(customerEmail);
-	        customer.setPassword(customerPwd);
+	        //update email and password
+	        customer.setEmail(p_customerEmail);
+	        customer.setPassword(p_customerPwd);
 	        
-	        RestoDAO.addCustomer(customer);
+	        //update customer by id
+	        RestoDAO.updateCustomer(new Long(p_customerId), customer);
 	        
 	        
-	        //create a token for next operation
+	        //create another token for next operation
 			AuthToken token = new AuthToken();
 			//set an infinite expiration 
 			token.setExpiration(UtilHelper.getExpiration30Minute());
@@ -74,7 +83,7 @@ public class CustomerSignupResource<K> extends ServerResource{
 	        //convert in a dto object
 			CustomerDTO customerDto = new CustomerDTO();
 			customerDto.email= customer.getEmail();
-			customerDto.id = customer.getId().getId();
+			customerDto.id = new Long(p_customerId).longValue();
 			customerDto.token = tokenDto;
 	        
 	        
@@ -105,6 +114,22 @@ public class CustomerSignupResource<K> extends ServerResource{
 			setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
 			ErrorResource error = new ErrorResource();
 			error.setErrorCode(ErrorResource.MANDATORY_FIELD_MISSING);
+			error.setErrorMessage(e.getMessage());
+			JsonRepresentation errorRepresentation = new JsonRepresentation(error);
+			return errorRepresentation;
+		
+		} catch (InvalidTokenForUserException e) {
+			setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+			ErrorResource error = new ErrorResource();
+			error.setErrorCode(ErrorResource.TOKEN_ERROR);
+			error.setErrorMessage(e.getMessage());
+			JsonRepresentation errorRepresentation = new JsonRepresentation(error);
+			return errorRepresentation;
+			
+		} catch (InvalidTokenException e) {
+			setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+			ErrorResource error = new ErrorResource();
+			error.setErrorCode(ErrorResource.TOKEN_ERROR);
 			error.setErrorMessage(e.getMessage());
 			JsonRepresentation errorRepresentation = new JsonRepresentation(error);
 			return errorRepresentation;

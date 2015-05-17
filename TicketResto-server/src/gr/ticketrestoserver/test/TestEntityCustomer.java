@@ -117,6 +117,35 @@ public class TestEntityCustomer {
 		}
 		
 		
+		//update a customer
+		Customer customer_6=null;
+		try {
+			customer_6 = RestoDAO.getCustomerByEmail("gr@gmail.com", "1234qwer");
+		} catch (WrongUserOrPasswordException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		assertTrue(customer_6 != null);
+		
+		Long id= customer_6.getId().getId();
+		customer_6.setEmail("gr_6@gmail.com");
+		customer_6.setPassword("1234qwer_6");
+		
+		try {
+			RestoDAO.updateCustomer(id, customer_6);
+		} catch (UniqueConstraintViolationExcpetion | MandatoryFieldException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		try {
+			customer_6 = RestoDAO.getCustomerByEmail("gr_6@gmail.com", "1234qwer_6");
+		} catch (WrongUserOrPasswordException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		assertTrue(customer_6 != null);
+		
 	}
 
 }

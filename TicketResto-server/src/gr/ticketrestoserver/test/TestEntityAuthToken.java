@@ -57,7 +57,7 @@ public class TestEntityAuthToken {
 		try {
 			//Key fakeToken = Key.
 			Key fakeKey = KeyFactory.createKey("AuthToken", 6666);
-			RestoDAO.checkAuthToken(fakeKey, "userB@Gmail.com");
+			RestoDAO.checkAuthToken(fakeKey.getId(), "userB@Gmail.com");
 		
 		}catch(InvalidTokenException e) {
 			System.out.println("CHECK an INVALID TOKEN");
@@ -71,7 +71,7 @@ public class TestEntityAuthToken {
 		
 		//CHECK a VALID TOKEN with an INAVLID USER
 		try {
-			RestoDAO.checkAuthToken(tokenA.getTokenId(), "userB@Gmail.com");
+			RestoDAO.checkAuthToken(tokenA.getTokenId().getId(), "userB@Gmail.com");
 		
 		}catch(InvalidTokenForUserException e) {
 			System.out.println("CHECK a VALID TOKEN with an INAVLID USER");
@@ -96,7 +96,7 @@ public class TestEntityAuthToken {
 		
 		//CHECK Valid Token with EXPIRATIN DATE
 		try {
-			RestoDAO.checkAuthToken(tokenB.getTokenId(), "userB@gmail.com");
+			RestoDAO.checkAuthToken(tokenB.getTokenId().getId(), "userB@gmail.com");
 		
 		}catch(InvalidTokenForUserException e) {
 			e.printStackTrace();

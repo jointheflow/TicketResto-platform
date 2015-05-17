@@ -39,7 +39,8 @@ public class CustomerLoginResource<K> extends ServerResource{
 				String p_password= this.getRequest().getResourceRef().getQueryAsForm().getFirstValue("password");
 				
 				log.info("start GET for Customer");
-			
+				log.info("p_email:"+p_email);
+				log.info("p_password:"+p_password);
 				//get customer
 				Customer customer = RestoDAO.getCustomerByEmail(p_email, p_password);
 				

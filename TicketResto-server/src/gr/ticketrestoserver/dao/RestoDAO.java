@@ -46,7 +46,7 @@ public class RestoDAO {
 		PersistenceManager pm = DAOHelper.getPersistenceManagerFactory().getPersistenceManager();
         try {
             checkMandatoryConstraintCustomer(customer);
-        	checkUniqueConstraintCustomer(pm, customer);
+        	checkUniqueConstraintCustomer(pm, customer, null);
         	pm.makePersistent(customer);
             customerId= customer.getId();
         
@@ -56,12 +56,20 @@ public class RestoDAO {
         return customerId;
 	}
 	
-	//TODO add check on mandatory field (ex. email, pwd) and manage exceptions
-	public static void updateCustomer(Customer customer) throws UniqueConstraintViolationExcpetion {
+	//Update a customer basing on key id
+	public static void updateCustomer(Long id, Customer new_customer) throws UniqueConstraintViolationExcpetion, MandatoryFieldException {
 		PersistenceManager pm = DAOHelper.getPersistenceManagerFactory().getPersistenceManager();
         try {
-        	checkUniqueConstraintCustomer(pm, customer);
-        	pm.makePersistent(customer);
+        	checkMandatoryConstraintCustomer(new_customer);
+        	checkUniqueConstraintCustomer(pm, new_customer, id);
+        	//find the customer object from datastore by id
+        	Customer customer = pm.getObjectById(Customer.class, id);
+        	if (customer !=null){
+        		customer.setEmail(new_customer.getEmail());
+        		customer.setPassword(new_customer.getPassword());
+        		
+        	}
+        	
             
             
        	} finally {
@@ -70,16 +78,20 @@ public class RestoDAO {
         
 	}
 	
-	//check unique constraint (email on Customer entity)
-	private static void checkUniqueConstraintCustomer(PersistenceManager pm, Customer customer) throws UniqueConstraintViolationExcpetion{
+	//check unique constraint (email on Customer entity). If there is one occurrence, Id parameter is check against
+	//id of first occurrence. If they are equals the check is removed because the email is referencing
+	//the same entity (may be an update)
+	private static void checkUniqueConstraintCustomer(PersistenceManager pm, Customer customer, Long id) throws UniqueConstraintViolationExcpetion{
 		Query query = pm.newQuery(Customer.class);
 		query.setFilter("email == email_p");
 		query.declareParameters("String email_p");
 		@SuppressWarnings("unchecked")
 		List<Customer> result = (List<Customer>)query.execute(customer.getEmail());
-		if (!result.isEmpty())
-			throw new UniqueConstraintViolationExcpetion("Customer with email "+customer.getEmail()+ " already exists!");
-	
+		if (!result.isEmpty() && 
+				id != null &&
+					((Customer) result.get(0)).getId().getId() != id.longValue()) 
+				throw new UniqueConstraintViolationExcpetion("Customer with email "+customer.getEmail()+ " already exists!");
+		
 	}
 	
 	//check mandatory field constraint (email and password  on Customer entity)
@@ -256,7 +268,7 @@ public class RestoDAO {
 	}
 	
 	/*Check if token exists, is not expired and is associated to the userEmail*/
-	public static void checkAuthToken(Key tokenId, String userEmail) throws InvalidTokenException, InvalidTokenForUserException {
+	public static void checkAuthToken(Long tokenId, String userEmail) throws InvalidTokenException, InvalidTokenForUserException {
 		AuthToken token=null;
 		PersistenceManager pm = DAOHelper.getPersistenceManagerFactory().getPersistenceManager();
 		try {
