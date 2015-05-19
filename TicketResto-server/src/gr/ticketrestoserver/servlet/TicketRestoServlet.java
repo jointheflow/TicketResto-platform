@@ -16,7 +16,7 @@ import com.google.appengine.api.datastore.Key;
 public class TicketRestoServlet extends HttpServlet {
 	public void doGet(HttpServletRequest req, HttpServletResponse resp)
 			throws IOException {
-		
+	/*	
 		String testProviderEmailA="testProviderA@gmail.com";
 		String testProviderEmailB="testProviderB@gmail.com";
 				
@@ -53,5 +53,6 @@ public class TicketRestoServlet extends HttpServlet {
 			
 		resp.setContentType("text/plain");
 		resp.getWriter().println("Hello, world");
+		*/
 	}
 }

@@ -61,7 +61,7 @@ public class CustomerLoginResource<K> extends ServerResource{
 				tokenDto.email = token.getUserEmail();
 				
 				//get all resti of customer and put in the DTO List
-				List<Resto> resti = RestoDAO.getResto(customer);
+				List<Resto> resti = RestoDAO.getResto(customer.getId().getId());
 				List<RestoDTO> restiDto = new ArrayList<RestoDTO>();
 				for (int i=0; i<resti.size(); i++) {
 					RestoDTO restoDto = new RestoDTO();

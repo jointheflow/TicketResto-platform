@@ -14,11 +14,12 @@ V A.2) Customer login
   GET /customer/login (email, password) return CustomerDTO with TokenDTO and List of RestoDTO
 
 V A.3) Customer update 
-  POST /customer/update (email, password, token)
+  POST /customer/update (id, email, password, token)
 
 B.1) Provider signup
 B.2) Provider login
 B.3) Provider Resto's customer update
+	POST /provider/resto/update (customerId, providerId, providerToken, providerEmail, restoValue)
 B.4) Provider update 
  
 C.1) Token management (es. invalidate)

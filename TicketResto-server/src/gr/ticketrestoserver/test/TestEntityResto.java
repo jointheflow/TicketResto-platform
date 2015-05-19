@@ -41,14 +41,32 @@ public class TestEntityResto {
   		Provider testProviderA = new Provider();
   		testProviderA.setEmail(testProviderEmailA);
   		testProviderA.setPassword("1234qwer");
-  		idProviderA = RestoDAO.addProvider(testProviderA);
+  		testProviderA.setName("ProviderA");
+  		try {
+			idProviderA = RestoDAO.addProvider(testProviderA);
+		} catch (MandatoryFieldException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		} catch (UniqueConstraintViolationExcpetion e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
   		System.out.println("providerA "+idProviderA+" set!"+testProviderA);
         
   		Key idProviderB = null;
   		Provider testProviderB = new Provider();
   		testProviderB.setEmail(testProviderEmailB);
   		testProviderB.setPassword("1234qwer");
-  		idProviderB = RestoDAO.addProvider(testProviderB);
+  		testProviderB.setName("ProviderB");
+  		try {
+			idProviderB = RestoDAO.addProvider(testProviderB);
+		} catch (MandatoryFieldException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		} catch (UniqueConstraintViolationExcpetion e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
   		System.out.println("providerB "+idProviderB+" set!"+testProviderB);
   		
   		//set up a customer with a resto of provider B already in place
@@ -110,7 +128,7 @@ public class TestEntityResto {
 		
 		//add resto to the customer for providerA.
 		//prior fecth a resto if exists
-		Resto resto = RestoDAO.getResto(customer, providerA);
+		Resto resto = RestoDAO.getResto(customer.getId().getId(), providerA.getId().getId());
 		//resto should not exists
 		assertTrue(resto==null);
 		
@@ -149,7 +167,7 @@ public class TestEntityResto {
 		System.out.println("Find customer by email "+testCustomerEmail+" "+ customer);
 		
 		//check resto prior update
-		Resto resto_pre = RestoDAO.getResto(customer, providerB);
+		Resto resto_pre = RestoDAO.getResto(customer.getId().getId(), providerB.getId().getId());
 		//resto must exist
 		assertTrue(resto_pre.getAmount()==resto_pre_amount);
 		assertTrue(resto_pre.getProvider().getId()==providerB.getId());

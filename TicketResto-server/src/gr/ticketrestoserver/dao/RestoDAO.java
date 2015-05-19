@@ -101,17 +101,23 @@ public class RestoDAO {
 		
 	}
 	
+	//check mandatory field constraint (email and password  on Customer entity)
+	private static void checkMandatoryConstraintProvider(Provider provider) throws MandatoryFieldException {
+		if (provider.getEmail() == null || provider.getPassword()==null || provider.getName()==null)
+				throw new MandatoryFieldException("email, password and name are mandatory!");
+		
+	}
+	
 	//TODO add check on mandatory field (ex. email, pwd) and manage exceptions
-	public static Key addProvider(Provider provider) {
+	public static Key addProvider(Provider provider) throws MandatoryFieldException, UniqueConstraintViolationExcpetion {
 		Key providerId=null;
 		PersistenceManager pm = DAOHelper.getPersistenceManagerFactory().getPersistenceManager();
         try {
+        	checkMandatoryConstraintProvider(provider);
         	checkUniqueConstraintProvider(pm, provider);
         	pm.makePersistent(provider);
             providerId= provider.getId();
-        } catch (UniqueConstraintViolationExcpetion e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+       
 		} finally {
             pm.close();
         }
@@ -136,7 +142,7 @@ public class RestoDAO {
 		Resto restoObj = null;
 		PersistenceManager pm = DAOHelper.getPersistenceManagerFactory().getPersistenceManager();
         try {
-        	//if resto has not an id make it persistent
+        	//if resto has not an id, make it persistent because is a new resto
         	if (resto.getId() ==null) {
         		pm.makePersistent(resto);
         		restoId=resto.getId();
@@ -145,10 +151,11 @@ public class RestoDAO {
 	        	//retrieve resto instance by using the provider-customer key
 	        	restoObj = pm.getObjectById(Resto.class, resto.getId());
 	        	//if not exists make persistence the new instance
-	        	if (restoObj == null)       	    			
-	            	pm.makePersistent(resto);
+	        	//if (restoObj == null)       	    			
+	            	//pm.makePersistent(resto);
+	        	//set new value
+	        	restoObj.setAmount(resto.getAmount());
 	        	
-	        	restoId= restoObj.getId();
         	}
         	
     			
@@ -201,7 +208,29 @@ public class RestoDAO {
 	}
 	
 	
-	public static Resto getResto(Customer customer, Provider provider) {
+	public static Provider getProviderById(Long id) {
+		Provider provider = null;
+		PersistenceManager pm = DAOHelper.getPersistenceManagerFactory().getPersistenceManager();
+		try {
+			provider = pm.getObjectById(Provider.class, id);
+		 } finally {
+	            pm.close();
+	        }
+	        return provider;
+	}
+	
+	public static Customer getCustomerById(Long id) {
+		Customer customer = null;
+		PersistenceManager pm = DAOHelper.getPersistenceManagerFactory().getPersistenceManager();
+		try {
+			customer = pm.getObjectById(Customer.class, id);
+		 } finally {
+	            pm.close();
+	     }
+	     return customer;
+	}
+	
+	public static Resto getResto(Long customerId, Long providerId) {
 		Resto resto = null;
 		PersistenceManager pm = DAOHelper.getPersistenceManagerFactory().getPersistenceManager();
 		try {
@@ -209,11 +238,11 @@ public class RestoDAO {
 			Query query = pm.newQuery(Resto.class);
 			//query.setFilter("customer == customer_p && provider == provider_p");
 			query.setFilter("provider == provider_p && customer == customer_p ");
-			query.declareParameters(Key.class.getName() + " provider_p, "+Key.class.getName()+" customer_p");
+			query.declareParameters(Long.class.getName() + " provider_p, "+Long.class.getName()+" customer_p");
 			//query.declareParameters("String email_p");
 			@SuppressWarnings({ "unchecked"})
 			//List<Resto> result = (List<Resto>)query.execute(customer, provider);
-			List<Resto> result = (List<Resto>)query.execute(provider.getId(), customer.getId());
+			List<Resto> result = (List<Resto>)query.execute(providerId, customerId);
 			if (!result.isEmpty())
 				resto = result.get(0);
 			
@@ -226,7 +255,7 @@ public class RestoDAO {
 		
 	}
 	
-	public static List<Resto> getResto(Customer customer) {
+	public static List<Resto> getResto(Long customerId) {
 		List<Resto> result;
 		PersistenceManager pm = DAOHelper.getPersistenceManagerFactory().getPersistenceManager();
 		try {
@@ -234,10 +263,10 @@ public class RestoDAO {
 			Query query = pm.newQuery(Resto.class);
 			
 			query.setFilter("customer == customer_p ");
-			query.declareParameters(Key.class.getName()+" customer_p");
+			query.declareParameters(Long.class.getName()+" customer_p");
 			//query.declareParameters("String email_p");
 			@SuppressWarnings({ "unchecked"})
-			List<Resto> tmpResult = (List<Resto>)query.execute(customer.getId());
+			List<Resto> tmpResult = (List<Resto>)query.execute(customerId);
 			//restoList = (List<Resto>)query.execute(customer.getId());
 			result = tmpResult;
 			
