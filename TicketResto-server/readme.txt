@@ -1,8 +1,8 @@
 
 2) TODO:
 
--insert a DTO layer between rest resource and the app. In the DTO layer we will put
-all necessary filed to be send to the app layer in the json format.
+V insert a DTO layer between rest resource and the app. In the DTO layer we will put
+all necessary field to be send to the app layer in the json format.
 
 
 
@@ -16,10 +16,15 @@ V A.2) Customer login
 V A.3) Customer update 
   POST /customer/update (id, email, password, token)
 
-B.1) Provider signup
+V B.1) Provider signup
+  POST /provider/signup (email, password, name)
+  
 B.2) Provider login
-B.3) Provider Resto's customer update
+
+V B.3) Provider Resto's customer update
 	POST /provider/resto/update (customerId, providerId, providerToken, providerEmail, restoValue)
+  B.3.1) check dto return, complete test
+  
 B.4) Provider update 
  
 C.1) Token management (es. invalidate)

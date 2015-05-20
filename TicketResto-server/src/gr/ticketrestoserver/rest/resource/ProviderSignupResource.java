@@ -2,11 +2,9 @@ package gr.ticketrestoserver.rest.resource;
 
 import gr.ticketrestoserver.dao.RestoDAO;
 import gr.ticketrestoserver.dao.entity.AuthToken;
-import gr.ticketrestoserver.dao.entity.Customer;
 import gr.ticketrestoserver.dao.entity.Provider;
 import gr.ticketrestoserver.dao.exception.MandatoryFieldException;
 import gr.ticketrestoserver.dao.exception.UniqueConstraintViolationExcpetion;
-import gr.ticketrestoserver.dto.CustomerDTO;
 import gr.ticketrestoserver.dto.ProviderDTO;
 import gr.ticketrestoserver.dto.TokenDTO;
 import gr.ticketrestoserver.helper.UtilHelper;
@@ -83,6 +81,7 @@ public class ProviderSignupResource<K> extends ServerResource{
 			ProviderDTO providerDto = new ProviderDTO();
 			providerDto.email= provider.getEmail();
 			providerDto.id = provider.getId().getId();
+			providerDto.description= provider.getName();
 			providerDto.token = tokenDto;
 	        
 	        
