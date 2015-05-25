@@ -1,11 +1,15 @@
 package gr.ticketrestoserver.test;
 
 import static org.junit.Assert.*;
+
+import javax.jdo.JDOObjectNotFoundException;
+
 import gr.ticketrestoserver.dao.RestoDAO;
 import gr.ticketrestoserver.dao.entity.Customer;
 import gr.ticketrestoserver.dao.exception.MandatoryFieldException;
 import gr.ticketrestoserver.dao.exception.UniqueConstraintViolationExcpetion;
 import gr.ticketrestoserver.dao.exception.WrongUserOrPasswordException;
+
 
 
 
@@ -41,16 +45,16 @@ public class TestEntityCustomer {
 	public void test() {
 		
 		//add  customer
-		Key idCustomer = null;
+		Key idCustomer_1 = null;
 		
 		Customer customer = new Customer();
 		customer.setEmail("gr@gmail.com");
 		customer.setPassword("1234qwer");
 		
 		try {
-			idCustomer = RestoDAO.addCustomer(customer);
-			assertTrue(idCustomer != null);
-			System.out.println("customer "+idCustomer+" added!");
+			idCustomer_1 = RestoDAO.addCustomer(customer);
+			assertTrue(idCustomer_1 != null);
+			System.out.println("customer "+idCustomer_1+" added!");
 		} catch (UniqueConstraintViolationExcpetion e2) {
 			// TODO Auto-generated catch block
 			e2.printStackTrace();
@@ -146,6 +150,17 @@ public class TestEntityCustomer {
 		}
 		assertTrue(customer_6 != null);
 		
+		
+		//delete customer
+		Long idDeleted = idCustomer_1.getId();
+		RestoDAO.deleteCustomerById(idDeleted);
+		Customer deletedCustomer = null;
+		try {
+			deletedCustomer = RestoDAO.getCustomerById(idDeleted);
+		}catch (JDOObjectNotFoundException e) {
+			assertTrue(deletedCustomer == null);
+			
+		}
 	}
 
 }

@@ -230,6 +230,19 @@ public class RestoDAO {
 	     return customer;
 	}
 	
+	
+	public static Customer deleteCustomerById(Long id) {
+		Customer customer = null;
+		PersistenceManager pm = DAOHelper.getPersistenceManagerFactory().getPersistenceManager();
+		try {
+			customer = pm.getObjectById(Customer.class, id);
+			pm.deletePersistent(customer);
+		 } finally {
+	            pm.close();
+	     }
+	     return customer;
+	}
+	
 	public static Resto getResto(Long customerId, Long providerId) {
 		Resto resto = null;
 		PersistenceManager pm = DAOHelper.getPersistenceManagerFactory().getPersistenceManager();
