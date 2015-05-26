@@ -20,6 +20,7 @@ import org.restlet.representation.Representation;
 public class TestRestoUpdateUseCase {
 	//set test constants
 	private Long customerId;
+	private Long customerToken;
 	private String customerEmail="customer1@usecase.org";
 	private String customerPassword = "customer1pwd";
 	private String providerEmail="provider1@usecase.org";
@@ -28,6 +29,7 @@ public class TestRestoUpdateUseCase {
 	
 	private String customerSignupRequest ="http://localhost:8888/app/customer/signup";//?email="+customerEmail+"&password="+customerPassword"
 	private String customerLoginRequest="http://localhost:8888/app/customer/login?email="+customerEmail+"&password="+customerPassword;
+	private String customerDeleteRequest="http://localhost:8888/app/customer/delete";//?email="+customerEmail+"&token="+customerPassword;
 	private String providerSignupRequest="http://localhost:8888/app/provider/signup";//+?email="+providerEmail+"&password="+providerPassword;
 	private String providerLoginRequest="http://localhost:8888/app/provider/login?email="+providerEmail+"&password="+providerPassword;
 	
@@ -48,13 +50,23 @@ public class TestRestoUpdateUseCase {
 		System.out.println(jsonobj.toString());
 		//gett the customerID
 		customerId = (Long)jsonobj.get("id");
+		customerToken = jsonobj.getJSONObject("token").getLong("id");
 		System.out.println(customerId);
 	}
 
 	@After
 	public void tearDown() throws Exception {
 		//remove new customer and provider
-		RestoDAO.deleteCustomerById(customerId);
+		Client customerClient = new Client(Protocol.HTTP);
+		customerDeleteRequest = customerDeleteRequest+"?email="+customerEmail+"&id="+customerId.toString()+"&token="+customerToken.toString();
+		
+		Request customerRequest = new Request(Method.DELETE, customerDeleteRequest);
+		
+		Response customerResponse = customerClient.handle(customerRequest);
+		
+		JSONObject jsonobj = new JsonRepresentation(customerResponse.getEntityAsText()).getJsonObject();
+		System.out.println(jsonobj.toString());
+		
 	}
 
 	@Test
