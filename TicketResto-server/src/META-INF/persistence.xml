@@ -6,7 +6,7 @@
         <properties>
             <!-- Set the nontransactionalread to false otherwhise you can write data that cannot be immediately visibile from other transaction --> 
             <property name="datanucleus.NontransactionalRead" value="false"/>
-            <property name="datanucleus.NontransactionalWrite" value="true"/>
+            <property name="datanucleus.NontransactionalWrite" value="false"/>
             <property name="datanucleus.ConnectionURL" value="appengine"/>
         </properties>
     </persistence-unit>

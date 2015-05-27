@@ -190,7 +190,7 @@ public class RestoDAO {
 		
 	}
 	
-	public static Provider getProviderByEmail(String email) {
+	public static Provider getProviderByEmail(String email, String password) throws WrongUserOrPasswordException {
 		Provider provider = null;
 		PersistenceManager pm = DAOHelper.getPersistenceManagerFactory().getPersistenceManager();
 		try {
@@ -199,8 +199,13 @@ public class RestoDAO {
 			query.declareParameters("String email_p");
 			@SuppressWarnings({ "unchecked"})
 			List<Provider> result = (List<Provider>)query.execute(email);
-			if (!result.isEmpty())
+			
+			if (!result.isEmpty()) {
 				provider = result.get(0);
+				if (!(provider.getPassword().equals(password)))  throw new WrongUserOrPasswordException("Wrong email user or password");
+			}else {
+				throw new WrongUserOrPasswordException("Wrong email user or password");
+			}
 		 } finally {
 	            pm.close();
 	        }
@@ -230,17 +235,66 @@ public class RestoDAO {
 	     return customer;
 	}
 	
-	
+	/*Delete customer and all resto asssociated with the user*/
 	public static Customer deleteCustomerById(Long id) {
 		Customer customer = null;
 		PersistenceManager pm = DAOHelper.getPersistenceManagerFactory().getPersistenceManager();
 		try {
+			//delete customer
 			customer = pm.getObjectById(Customer.class, id);
+			String email = customer.getEmail();
 			pm.deletePersistent(customer);
+			
+			//delete resti
+			Query query = pm.newQuery(Resto.class);
+			query.setFilter("customer == customer_p ");
+			query.declareParameters(Long.class.getName()+" customer_p");
+			//query.declareParameters("String email_p");
+			@SuppressWarnings({ "unchecked"})
+			List<Resto> restiList = (List<Resto>)query.execute(id);
+			pm.deletePersistentAll(restiList);
+			
+			//delete token of the user basing email
+			Query query_t = pm.newQuery(AuthToken.class);
+			
+			query_t.setFilter("userEmail == email_p ");
+			query_t.declareParameters("String email_p");
+			//query.declareParameters("String email_p");
+			@SuppressWarnings({ "unchecked"})
+			List<AuthToken> tokenList = (List<AuthToken>)query_t.execute(email);
+			pm.deletePersistentAll(tokenList);
+			
+			
+		} finally {
+            pm.close();
+		}
+	     return null;
+	}
+	
+	
+	public static Provider deleteProviderById(Long id) {
+		Provider provider = null;
+		PersistenceManager pm = DAOHelper.getPersistenceManagerFactory().getPersistenceManager();
+		try {
+			//delete provider
+			provider= pm.getObjectById(Provider.class, id);
+			String email = provider.getEmail();
+			pm.deletePersistent(provider);
+			
+			//delete token of the user basing email
+			Query query_t = pm.newQuery(AuthToken.class);
+			
+			query_t.setFilter("userEmail == email_p ");
+			query_t.declareParameters("String email_p");
+			//query.declareParameters("String email_p");
+			@SuppressWarnings({ "unchecked"})
+			List<AuthToken> tokenList = (List<AuthToken>)query_t.execute(email);
+			pm.deletePersistentAll(tokenList);
+			
 		 } finally {
 	            pm.close();
 	     }
-	     return customer;
+	     return null;
 	}
 	
 	public static Resto getResto(Long customerId, Long providerId) {
@@ -282,6 +336,27 @@ public class RestoDAO {
 			List<Resto> tmpResult = (List<Resto>)query.execute(customerId);
 			//restoList = (List<Resto>)query.execute(customer.getId());
 			result = tmpResult;
+			
+		 } finally {
+	         pm.close();
+	         
+	     }
+		return result;   
+			
+	}
+	public static List<AuthToken> getTokenOfUser(String userEmail) {
+		List<AuthToken> result;
+		PersistenceManager pm = DAOHelper.getPersistenceManagerFactory().getPersistenceManager();
+		try {
+			pm.getFetchPlan().setGroup(FetchGroup.ALL);
+			Query query_t = pm.newQuery(AuthToken.class);
+			
+			query_t.setFilter("userEmail == email_p ");
+			query_t.declareParameters("String email_p");
+			//query.declareParameters("String email_p");
+			@SuppressWarnings({ "unchecked"})
+			List<AuthToken> tokenList = (List<AuthToken>)query_t.execute(userEmail);
+			result = tokenList;
 			
 		 } finally {
 	         pm.close();

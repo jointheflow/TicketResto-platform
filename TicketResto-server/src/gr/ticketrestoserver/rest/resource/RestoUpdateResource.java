@@ -6,6 +6,7 @@ import gr.ticketrestoserver.dao.entity.Provider;
 import gr.ticketrestoserver.dao.entity.Resto;
 import gr.ticketrestoserver.dao.exception.InvalidTokenException;
 import gr.ticketrestoserver.dao.exception.InvalidTokenForUserException;
+import gr.ticketrestoserver.dto.ProviderDTO;
 import gr.ticketrestoserver.dto.RestoDTO;
 
 import java.util.logging.Logger;
@@ -64,10 +65,18 @@ public class RestoUpdateResource<K> extends ServerResource{
 	        resto.setAmount(new Double(p_value));
 	        RestoDAO.updateResto(resto);
 	        
+	        //provider DTO
+	        ProviderDTO providerDto = new ProviderDTO();
+	        providerDto.id = new Long(p_providerId);
+	        providerDto.description = p_providerEmail;
+	       // providerDto.email = p_providerEmail;
 	        
 	        //return DTO
 	        RestoDTO restoDto = new RestoDTO();
 	        restoDto.setAmount(resto.getAmount());
+	        restoDto.setId(resto.getId().getId());
+	        restoDto.setProvider(providerDto);
+	        
 				        	        
 			JsonRepresentation representation= new JsonRepresentation(restoDto);
 			setStatus(Status.SUCCESS_CREATED);

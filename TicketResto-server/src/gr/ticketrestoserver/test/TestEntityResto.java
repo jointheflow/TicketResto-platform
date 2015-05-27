@@ -1,7 +1,11 @@
 package gr.ticketrestoserver.test;
 
 import static org.junit.Assert.*;
+
+import java.util.List;
+
 import gr.ticketrestoserver.dao.RestoDAO;
+import gr.ticketrestoserver.dao.entity.AuthToken;
 import gr.ticketrestoserver.dao.entity.Customer;
 import gr.ticketrestoserver.dao.entity.Provider;
 import gr.ticketrestoserver.dao.entity.Resto;
@@ -111,9 +115,16 @@ public class TestEntityResto {
 	@Test
 	public void testNewRestoProviderA() {
 		//retrieve the providerA by email
-		Provider providerA = RestoDAO.getProviderByEmail(testProviderEmailA);
-		assertTrue(providerA!=null);
-		System.out.println("Find provider by email "+testProviderEmailA +" "+ providerA);
+		Provider providerA=null;
+		try {
+			providerA = RestoDAO.getProviderByEmail(testProviderEmailA, "1234qwer");
+			assertTrue(providerA!=null);
+			System.out.println("Find provider by email "+testProviderEmailA +" "+ providerA);
+		} catch (WrongUserOrPasswordException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		
 		
 		//retrieve the customer by email
 		Customer customer=null;
@@ -151,9 +162,16 @@ public class TestEntityResto {
 	@Test
 	public void testUpdateRestoProviderB() {
 		//retrieve the providerB by email
-		Provider providerB = RestoDAO.getProviderByEmail(testProviderEmailB);
-		assertTrue(providerB!=null);
-		System.out.println("Find provider by email "+testProviderEmailB +" "+ providerB);
+		Provider providerB=null;
+		try {
+			providerB = RestoDAO.getProviderByEmail(testProviderEmailB,"1234qwer");
+			assertTrue(providerB!=null);
+			System.out.println("Find provider by email "+testProviderEmailB +" "+ providerB);
+		} catch (WrongUserOrPasswordException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		
 		
 		//retrieve the customer by email
 		Customer customer=null;
@@ -179,6 +197,18 @@ public class TestEntityResto {
 		assertTrue(resto_pre.getAmount().equals(new Double(125)));
 		System.out.println("resto id:"+resto_pre.getId()+" provider id:"+resto_pre.getProvider().getId()+" customer id:"+resto_pre.getCustomer().getId()+" updated!"+resto_pre);
 		
+		
+		//delete a customer
+		Long custId= customer.getId().getId();
+		Customer deletedCustomer = RestoDAO.deleteCustomerById(custId);
+		//user not exists!!
+		assertTrue(deletedCustomer==null);
+		Resto deletedResto = RestoDAO.getResto(custId, providerB.getId().getId());
+		//there are NOT resti for the customer!!!
+		assertTrue(deletedResto==null);		
+		List<AuthToken> tokens = RestoDAO.getTokenOfUser(testCustomerEmail);
+		//there are NOT token for the customer!!!
+		assertTrue(tokens.isEmpty());
 		
 	}
 	

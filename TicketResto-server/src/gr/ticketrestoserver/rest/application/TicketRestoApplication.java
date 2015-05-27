@@ -25,7 +25,9 @@ public class TicketRestoApplication extends Application {
         router.attach("/customer/update", gr.ticketrestoserver.rest.resource.CustomerUpdateResource.class);
         router.attach("/customer/delete", gr.ticketrestoserver.rest.resource.CustomerDeleteResource.class);
         
+        router.attach("/provider/login", gr.ticketrestoserver.rest.resource.ProviderLoginResource.class);
         router.attach("/provider/signup", gr.ticketrestoserver.rest.resource.ProviderSignupResource.class);
+        router.attach("/provider/delete", gr.ticketrestoserver.rest.resource.ProviderDeleteResource.class);
         
         router.attach("/provider/resto/update", gr.ticketrestoserver.rest.resource.RestoUpdateResource.class);
         //router.attach("/media", MediaResource.class);
