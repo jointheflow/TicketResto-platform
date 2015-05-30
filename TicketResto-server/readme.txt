@@ -1,4 +1,5 @@
-6) Bugfix on resto update because it seems that in case of update it creates (duplicates) another instance of resto
+7) set High Replication with setApplyAllHighRepJobPolicy() in the command window!!!
+V 6) Bugfix on resto update because it seems that in case of update it creates (duplicates) another instance of resto
 5) in the peristence.xml set nontransactionalread and nontransactionalwrite properties to false
 
 3) complete test case from http client

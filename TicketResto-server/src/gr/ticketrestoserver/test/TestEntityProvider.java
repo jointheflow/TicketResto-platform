@@ -20,7 +20,7 @@ import com.google.appengine.tools.development.testing.LocalServiceTestHelper;
 
 public class TestEntityProvider {
 	private final LocalServiceTestHelper helper =  
-	        new LocalServiceTestHelper(new LocalDatastoreServiceTestConfig());  
+	        new LocalServiceTestHelper(new LocalDatastoreServiceTestConfig().setApplyAllHighRepJobPolicy());  
 	
 	
 	@Before  

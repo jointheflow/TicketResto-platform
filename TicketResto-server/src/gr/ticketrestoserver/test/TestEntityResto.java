@@ -32,7 +32,7 @@ public class TestEntityResto {
 	private Double resto_pre_amount= new Double(222);
 	
 	private final LocalServiceTestHelper helper =  
-	        new LocalServiceTestHelper(new LocalDatastoreServiceTestConfig());  
+	        new LocalServiceTestHelper(new LocalDatastoreServiceTestConfig().setApplyAllHighRepJobPolicy());  
 	
 	
 	@Before  

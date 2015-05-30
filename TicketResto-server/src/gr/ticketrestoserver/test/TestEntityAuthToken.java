@@ -25,7 +25,7 @@ import com.google.appengine.tools.development.testing.LocalServiceTestHelper;
 public class TestEntityAuthToken {
 
 	private final LocalServiceTestHelper helper =  
-	        new LocalServiceTestHelper(new LocalDatastoreServiceTestConfig());  
+	        new LocalServiceTestHelper(new LocalDatastoreServiceTestConfig().setApplyAllHighRepJobPolicy());  
 	
 	
 	@Before  
@@ -49,7 +49,7 @@ public class TestEntityAuthToken {
 	    Date infiniteExpiration =  df.parse(target); 
 		tokenA.setExpiration(infiniteExpiration);
 		
-		RestoDAO.addAuthToken(tokenA);
+		Long tokenAId = RestoDAO.addAuthToken(tokenA).getId();
 		assertTrue(tokenA.getExpiration()!= null);
 		
 		//CHECK an INVALID TOKEN
@@ -71,7 +71,7 @@ public class TestEntityAuthToken {
 		
 		//CHECK a VALID TOKEN with an INAVLID USER
 		try {
-			RestoDAO.checkAuthToken(tokenA.getTokenId().getId(), "userB@Gmail.com");
+			RestoDAO.checkAuthToken(tokenAId, "userB@Gmail.com");
 		
 		}catch(InvalidTokenForUserException e) {
 			System.out.println("CHECK a VALID TOKEN with an INAVLID USER");
