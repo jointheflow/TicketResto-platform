@@ -6,7 +6,6 @@ package gr.ticketrestoserver.dao;
 import java.util.Date;
 import java.util.List;
 
-
 import gr.ticketrestoserver.dao.entity.AuthToken;
 import gr.ticketrestoserver.dao.entity.Customer;
 import gr.ticketrestoserver.dao.entity.Provider;
@@ -18,68 +17,117 @@ import gr.ticketrestoserver.dao.exception.UniqueConstraintViolationExcpetion;
 import gr.ticketrestoserver.dao.exception.WrongUserOrPasswordException;
 import gr.ticketrestoserver.helper.DAOHelper;
 
-import javax.jdo.FetchGroup;
-import javax.jdo.JDOObjectNotFoundException;
-import javax.jdo.PersistenceManager;
-import javax.jdo.Query;
-import javax.jdo.Transaction;
-
+import com.google.appengine.api.datastore.DatastoreService;
+import com.google.appengine.api.datastore.DatastoreServiceFactory;
+import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.Key;
+import com.google.appengine.api.datastore.KeyFactory;
+import com.google.appengine.api.datastore.Query.Filter;
+import com.google.appengine.api.datastore.Query.FilterOperator;
+import com.google.appengine.api.datastore.Query.FilterPredicate;
+import com.google.appengine.api.datastore.Query;
+import com.google.appengine.api.datastore.PreparedQuery;
+
+import static com.google.appengine.api.datastore.FetchOptions.Builder.*;
+
+import com.google.appengine.api.datastore.Transaction;
+
+import static com.google.appengine.api.search.Query.Builder;
+
 
 
 
 public class RestoDAO {
 	
+	/*Customer is saved in the datastore as the following:
+	 * Entity --> Customer
+	 * 				key: "customerRootKey"/customerKey
+	 * 				email: <email>
+	 * 				password: <password>
+	 * */
 	//TODO add check on mandatory field (ex. email, pwd) and manage exceptions
 	public static Key addCustomer(Customer customer) throws UniqueConstraintViolationExcpetion, MandatoryFieldException {
-		Key customerId=null;
-		PersistenceManager pm = DAOHelper.getPersistenceManagerFactory().getPersistenceManager();
-        Transaction tx = pm.currentTransaction();
+		Key customerId = null;
+		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+		Transaction tx = datastore.beginTransaction();
 		try {
-			tx.begin();
-            checkMandatoryConstraintCustomer(customer);
-        	checkUniqueConstraintCustomer(pm, customer, null);
-        	pm.makePersistent(customer);
-        	tx.commit();
-        	
-            customerId= customer.getId();
-        
+			checkUniqueConstraintCustomer(datastore, customer.getEmail());
+			checkMandatoryConstraintCustomer(customer);
+			Key customersRootKey = KeyFactory.createKey("customersRoot", "customersRootKey");
+	        
+			Entity e_customer = new Entity("Customer", customersRootKey);
+		
+			e_customer.setProperty("email", customer.getEmail());
+			e_customer.setProperty("password", customer.getPassword());
+		
+		
+			datastore.put(e_customer);
+			customerId = e_customer.getKey();
+			tx.commit();
 		} finally {
-            if (tx.isActive()) tx.rollback();
-			pm.close();
-        }
+		    if (tx.isActive()) {
+		        tx.rollback();
+		    }
+		}
+		
+        	
         return customerId;
 	}
 	
 	//Update a customer basing on key id
 	public static void updateCustomer(Long id, Customer new_customer) throws UniqueConstraintViolationExcpetion, MandatoryFieldException {
-		PersistenceManager pm = DAOHelper.getPersistenceManagerFactory().getPersistenceManager();
-        Transaction tx = pm.currentTransaction();
+		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+		Transaction tx = datastore.beginTransaction();
+        
 		try {
-			tx.begin();
+			
         	checkMandatoryConstraintCustomer(new_customer);
-        	checkUniqueConstraintCustomer(pm, new_customer, id);
+        	//checkUniqueConstraintCustomer(pm, new_customer, id);
         	//find the customer object from datastore by id
-        	Customer customer = pm.getObjectById(Customer.class, id);
-        	if (customer !=null){
-        		customer.setEmail(new_customer.getEmail());
-        		customer.setPassword(new_customer.getPassword());
-        		
-        	}
+        	com.google.appengine.api.search.Query.Builder query = com.google.appengine.api.search.Query.newBuilder(); 
         	
-            tx.commit();
+        	
+        	query.addKindBuilder().setName("Greeting");
+        	query.setFilter(makeFilter(
+        	    "__key__", PropertyFilter.Operator.HAS_ANCESTOR, makeValue(guestbookKey)).build());
+        	query.addOrder(makeOrder("date", PropertyOrder.Direction.DESCENDING));
+        	query.setLimit(10);
+
+        	RunQueryRequest.Builder queryRequest = RunQueryRequest.newBuilder().setQuery(query);
+        	List<EntityResult> result =
+        	    datastore.runQuery(queryRequest.build()).getBatch().getEntityResultList();
+        	
+        	
+        	
+        	
+        	
             
        	} finally {
-       		if (tx.isActive()) tx.rollback();
-            pm.close();
+       		
         }
         
+	}
+	
+	
+	/*Check if customer email already exists*/
+	private static void checkUniqueConstraintCustomer(DatastoreService p_datastore, String p_email) throws UniqueConstraintViolationExcpetion{
+		Filter emailExistsFilter = new FilterPredicate ("email", FilterOperator.EQUAL, p_email);
+		Query q = new Query("Customer").setFilter(emailExistsFilter);
+		
+		PreparedQuery pq = p_datastore.prepare(q);
+		if (pq.countEntities(withLimit(1)) > 0) 
+			throw new UniqueConstraintViolationExcpetion("Customer with email "+p_email+ " already exists!");
+	
 	}
 	
 	//check unique constraint (email on Customer entity). If there is one occurrence, Id parameter is check against
 	//id of first occurrence. If they are equals the check is removed because the email is referencing
 	//the same entity (may be an update)
-	private static void checkUniqueConstraintCustomer(PersistenceManager pm, Customer customer, Long id) throws UniqueConstraintViolationExcpetion{
+	/*private static void checkUniqueConstraintCustomer(PersistenceManager pm, Customer customer, Long id) throws UniqueConstraintViolationExcpetion{
+		
+		
+		
+		
 		Query query = pm.newQuery(Customer.class);
 		query.setFilter("email == email_p");
 		query.declareParameters("String email_p");
@@ -91,6 +139,8 @@ public class RestoDAO {
 				throw new UniqueConstraintViolationExcpetion("Customer with email "+customer.getEmail()+ " already exists!");
 		
 	}
+	*/
+	
 	
 	//check mandatory field constraint (email and password  on Customer entity)
 	private static void checkMandatoryConstraintCustomer(Customer customer) throws MandatoryFieldException {
@@ -99,13 +149,17 @@ public class RestoDAO {
 		
 	}
 	
+	
+	/*
 	//check mandatory field constraint (email and password  on Customer entity)
 	private static void checkMandatoryConstraintProvider(Provider provider) throws MandatoryFieldException {
 		if (provider.getEmail() == null || provider.getPassword()==null || provider.getName()==null)
 				throw new MandatoryFieldException("email, password and name are mandatory!");
 		
 	}
+	*/
 	
+	/*
 	//TODO add check on mandatory field (ex. email, pwd) and manage exceptions
 	public static Key addProvider(Provider provider) throws MandatoryFieldException, UniqueConstraintViolationExcpetion {
 		Key providerId=null;
@@ -124,7 +178,9 @@ public class RestoDAO {
         }
         return providerId;
 	}
-
+*/
+	
+	/*
 	//check unique constraint (email on Provider entity)
 		private static void checkUniqueConstraintProvider(PersistenceManager pm, Provider provider) throws UniqueConstraintViolationExcpetion{
 			Query query = pm.newQuery(Provider.class);
@@ -137,7 +193,9 @@ public class RestoDAO {
 		
 		}
 	
-		
+		*/
+	
+	/*
 	public static Key updateResto(Resto resto) {
 		Key restoId=null;
 		Resto restoObj = null;
@@ -170,36 +228,50 @@ public class RestoDAO {
         return restoId;
 	}
 	
+	*/
 	
-	public static Customer getCustomerByEmail(String email, String password) throws WrongUserOrPasswordException {
+	
+	
+	public static Customer getCustomerByEmail(String p_email, String p_password) throws WrongUserOrPasswordException {
 		Customer customer = null;
-		PersistenceManager pm = DAOHelper.getPersistenceManagerFactory().getPersistenceManager();
-		Transaction tx = pm.currentTransaction();
+		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+		Transaction tx = datastore.beginTransaction();
 		try {
-			tx.begin();
-			Query query = pm.newQuery(Customer.class);
-			query.setFilter("email == email_p");
-			query.declareParameters("String email_p");
-			@SuppressWarnings({ "unchecked"})
-			List<Customer> result = (List<Customer>)query.execute(email);
+			Filter emailExistsFilter = new FilterPredicate ("email", FilterOperator.EQUAL, p_email);
+			Query q = new Query("Customer").setFilter(emailExistsFilter);		
+			PreparedQuery pq = datastore.prepare(q);
 			
-			if (!result.isEmpty()) {
-				customer = result.get(0);
-				if (!(customer.getPassword().equals(password)))  throw new WrongUserOrPasswordException("Wrong email user or password");
-			}else {
-				throw new WrongUserOrPasswordException("Wrong email user or password");
+			if (pq.countEntities(withLimit(1)) > 0) {
 				
+				//TODO instantiate Customer
+				customer = new Customer();
+				for (Entity result : pq.asIterable()) {
+					customer.setEmail((String) result.getProperty("email"));
+					customer.setPassword((String) result.getProperty("password"));
+					customer.setId((Key) result.getKey());
+				}
+				
+				//check if password is correct
+				if (!(customer.getPassword().equals(p_password)))  throw new WrongUserOrPasswordException("Wrong email user or password");
+				
+			}else {
+					throw new WrongUserOrPasswordException("Wrong email user or password");
 			}
-			
+				
 			tx.commit();
-		 } finally {
-			 if (tx.isActive()) tx.rollback();
-	         pm.close();
-	        }
+		} finally {
+		    if (tx.isActive()) {
+		        tx.rollback();
+		    }
+		}
+		
 	     return customer;
 		
 	}
 	
+	
+	
+	/*
 	public static Provider getProviderByEmail(String email, String password) throws WrongUserOrPasswordException {
 		Provider provider = null;
 		PersistenceManager pm = DAOHelper.getPersistenceManagerFactory().getPersistenceManager();
@@ -225,7 +297,9 @@ public class RestoDAO {
 	        }
 	        return provider;
 	}
+	*/
 	
+	/*
 	
 	public static Provider getProviderById(Long id) {
 		Provider provider = null;
@@ -241,7 +315,9 @@ public class RestoDAO {
 	        }
 	        return provider;
 	}
+	*/
 	
+	/*
 	public static Customer getCustomerById(Long id) {
 		Customer customer = null;
 		PersistenceManager pm = DAOHelper.getPersistenceManagerFactory().getPersistenceManager();
@@ -256,8 +332,12 @@ public class RestoDAO {
 	     }
 	     return customer;
 	}
+	*/
+	
+	
 	
 	/*Delete customer and all resto asssociated with the user*/
+	/*
 	public static Customer deleteCustomerById(Long id) {
 		Customer customer = null;
 		PersistenceManager pm = DAOHelper.getPersistenceManagerFactory().getPersistenceManager();
@@ -296,7 +376,9 @@ public class RestoDAO {
 	     return null;
 	}
 	
+	*/
 	
+	/*
 	public static Provider deleteProviderById(Long id) {
 		Provider provider = null;
 		PersistenceManager pm = DAOHelper.getPersistenceManagerFactory().getPersistenceManager();
@@ -324,7 +406,10 @@ public class RestoDAO {
 	     }
 	     return null;
 	}
+	*/
 	
+	
+	/*
 	public static Resto getResto(Long customerId, Long providerId) {
 		Resto resto = null;
 		PersistenceManager pm = DAOHelper.getPersistenceManagerFactory().getPersistenceManager();
@@ -352,7 +437,9 @@ public class RestoDAO {
 		
 		
 	}
+	*/
 	
+	/*
 	public static List<Resto> getResto(Long customerId) {
 		List<Resto> result;
 		PersistenceManager pm = DAOHelper.getPersistenceManagerFactory().getPersistenceManager();
@@ -378,6 +465,11 @@ public class RestoDAO {
 		return result;   
 			
 	}
+	
+	*/
+	
+	
+	/*
 	public static List<AuthToken> getTokenOfUser(String userEmail) {
 		List<AuthToken> result;
 		PersistenceManager pm = DAOHelper.getPersistenceManagerFactory().getPersistenceManager();
@@ -402,7 +494,9 @@ public class RestoDAO {
 		return result;   
 			
 	}
+	*/
 	
+	/*
 	
 	public static Key addAuthToken(AuthToken token) {
 		Key tokenId = null;
@@ -423,8 +517,11 @@ public class RestoDAO {
        
         return tokenId;
 	}
+	*/
+	
 	
 	/*Check if token exists, is not expired and is associated to the userEmail*/
+	/*
 	public static void checkAuthToken(Long tokenId, String userEmail) throws InvalidTokenException, InvalidTokenForUserException {
 		AuthToken token=null;
 		PersistenceManager pm = DAOHelper.getPersistenceManagerFactory().getPersistenceManager();
@@ -449,6 +546,6 @@ public class RestoDAO {
 			
 		}
 	}
-	
+	*/
 	
 }

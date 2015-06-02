@@ -2,32 +2,23 @@ package gr.ticketrestoserver.dao.entity;
 
 
 
-
-import javax.jdo.annotations.IdGeneratorStrategy;
-
-import javax.jdo.annotations.PersistenceCapable;
-import javax.jdo.annotations.Persistent;
-import javax.jdo.annotations.PrimaryKey;
-import javax.jdo.annotations.Unique;
-
-
 import com.google.appengine.api.datastore.Key;
 
 
-@PersistenceCapable
+
 public class Customer {
 
-	@PrimaryKey
-	@Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
 	private Key id;
 	
-	@Unique
-	@Persistent
+	public void setId(Key id) {
+		this.id = id;
+	}
+
+
 	private String email;
 	
-	@Persistent
-	private String password;
 
+	private String password;
 	
 
 	public String getEmail() {
