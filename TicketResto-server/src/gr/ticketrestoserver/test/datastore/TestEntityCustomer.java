@@ -64,6 +64,27 @@ public class TestEntityCustomer {
 			e.printStackTrace();
 		}
 		
+		
+		//add  customer
+		Key idCustomer_same_email = null;
+		
+		Customer customer_same_email = new Customer();
+		customer_same_email.setEmail("same_email@gmail.com");
+		customer_same_email.setPassword("1234qwer");
+		
+		try {
+			idCustomer_same_email = RestoDAO.addCustomer(customer);
+			assertTrue(idCustomer_same_email != null);
+			System.out.println("customer "+idCustomer_same_email+" added!");
+		} catch (UniqueConstraintViolationExcpetion e2) {
+			// TODO Auto-generated catch block
+			e2.printStackTrace();
+		} catch (MandatoryFieldException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+
 				
 		
 		//try to add the same customer with same email
@@ -122,8 +143,8 @@ public class TestEntityCustomer {
 			e.printStackTrace();
 		}
 		
-	/*	
-		//update a customer
+	
+		//update a customer with different email
 		Customer customer_6=null;
 		try {
 			customer_6 = RestoDAO.getCustomerByEmail("gr@gmail.com", "1234qwer");
@@ -163,7 +184,7 @@ public class TestEntityCustomer {
 			assertTrue(deletedCustomer == null);
 			
 		}
-		*/
+		
 	}
 
 }

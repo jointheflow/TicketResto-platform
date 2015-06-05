@@ -20,6 +20,7 @@ import gr.ticketrestoserver.helper.DAOHelper;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.EntityNotFoundException;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
 import com.google.appengine.api.datastore.Query.Filter;
@@ -82,38 +83,41 @@ public class RestoDAO {
 		try {
 			
         	checkMandatoryConstraintCustomer(new_customer);
-        	//checkUniqueConstraintCustomer(pm, new_customer, id);
+        	checkUniqueConstraintCustomer(datastore, new_customer, id);
         	//find the customer object from datastore by id
-        	com.google.appengine.api.search.Query.Builder query = com.google.appengine.api.search.Query.newBuilder(); 
-        	
-        	
-        	query.addKindBuilder().setName("Greeting");
-        	query.setFilter(makeFilter(
-        	    "__key__", PropertyFilter.Operator.HAS_ANCESTOR, makeValue(guestbookKey)).build());
-        	query.addOrder(makeOrder("date", PropertyOrder.Direction.DESCENDING));
-        	query.setLimit(10);
-
-        	RunQueryRequest.Builder queryRequest = RunQueryRequest.newBuilder().setQuery(query);
-        	List<EntityResult> result =
-        	    datastore.runQuery(queryRequest.build()).getBatch().getEntityResultList();
-        	
-        	
-        	
-        	
-        	
-            
-       	} finally {
-       		
+        	Key customersRootKey = KeyFactory.createKey("customersRoot", "customersRootKey");
+        	Key customerKey = KeyFactory.createKey(customersRootKey, "Customer", id);
+        	Entity e_customer = datastore.get(customerKey);
+        	//System.out.println(e_customer);
+         
+        	e_customer.setProperty("email", new_customer.getEmail());
+			e_customer.setProperty("password", new_customer.getPassword());
+			datastore.put(e_customer);
+			tx.commit();
+			
+       	} catch (EntityNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} finally {
+			if (tx.isActive()) {
+		        tx.rollback();
+		    }
         }
         
 	}
 	
 	
-	/*Check if customer email already exists*/
+	/*Check if customer email already exists-- STRONG CONSISTENCY*/
 	private static void checkUniqueConstraintCustomer(DatastoreService p_datastore, String p_email) throws UniqueConstraintViolationExcpetion{
-		Filter emailExistsFilter = new FilterPredicate ("email", FilterOperator.EQUAL, p_email);
-		Query q = new Query("Customer").setFilter(emailExistsFilter);
-		
+			
+		//We use an ancestor to guarantee STRONG CONSISTENCY
+		Key customersRootKey = KeyFactory.createKey("customersRoot", "customersRootKey");
+    	Filter emailExistsFilter = new FilterPredicate ("email", FilterOperator.EQUAL, p_email);
+    	Query q = new Query("Customer", customersRootKey)
+    	                    .setAncestor(customersRootKey)
+    	                    .setFilter(emailExistsFilter);
+    
+			
 		PreparedQuery pq = p_datastore.prepare(q);
 		if (pq.countEntities(withLimit(1)) > 0) 
 			throw new UniqueConstraintViolationExcpetion("Customer with email "+p_email+ " already exists!");
@@ -123,23 +127,24 @@ public class RestoDAO {
 	//check unique constraint (email on Customer entity). If there is one occurrence, Id parameter is check against
 	//id of first occurrence. If they are equals the check is removed because the email is referencing
 	//the same entity (may be an update)
-	/*private static void checkUniqueConstraintCustomer(PersistenceManager pm, Customer customer, Long id) throws UniqueConstraintViolationExcpetion{
+	private static void checkUniqueConstraintCustomer(DatastoreService p_datastore, Customer customer, Long id) throws UniqueConstraintViolationExcpetion{
 		
 		
-		
-		
-		Query query = pm.newQuery(Customer.class);
-		query.setFilter("email == email_p");
-		query.declareParameters("String email_p");
-		@SuppressWarnings("unchecked")
-		List<Customer> result = (List<Customer>)query.execute(customer.getEmail());
-		if (!result.isEmpty() && 
-				id != null &&
-					((Customer) result.get(0)).getId().getId() != id.longValue()) 
-				throw new UniqueConstraintViolationExcpetion("Customer with email "+customer.getEmail()+ " already exists!");
+		//We use an ancestor to guarantee STRONG CONSISTENCY
+		Key customersRootKey = KeyFactory.createKey("customersRoot", "customersRootKey");
+    	
+		Filter emailExistsFilter = new FilterPredicate ("email", FilterOperator.EQUAL, customer.getEmail());
+    	Query q = new Query("Customer", customersRootKey)
+    	                    .setAncestor(customersRootKey)
+    	                    .setFilter(emailExistsFilter);
+    
+    	Key customerKey = KeyFactory.createKey(customersRootKey, "Customer", id);
+		PreparedQuery pq = p_datastore.prepare(q);
+		if (pq.countEntities(withLimit(1)) > 0 && id != null && pq.asSingleEntity().getKey().compareTo(customerKey)!=0 ) 
+			throw new UniqueConstraintViolationExcpetion("Customer with email "+customer.getEmail()+ " already exists!");
 		
 	}
-	*/
+	
 	
 	
 	//check mandatory field constraint (email and password  on Customer entity)
@@ -317,40 +322,51 @@ public class RestoDAO {
 	}
 	*/
 	
-	/*
+	
 	public static Customer getCustomerById(Long id) {
 		Customer customer = null;
-		PersistenceManager pm = DAOHelper.getPersistenceManagerFactory().getPersistenceManager();
-		Transaction tx = pm.currentTransaction();
+		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+		Transaction tx = datastore.beginTransaction();
 		try {
-			tx.begin();
-			customer = pm.getObjectById(Customer.class, id);
-			tx.commit();
-		 } finally {
+			Key customersRootKey = KeyFactory.createKey("customersRoot", "customersRootKey");
+        	Key customerKey = KeyFactory.createKey(customersRootKey, "Customer", id);
+			Entity e_customer = datastore.get(customerKey);
+			customer = new Customer();
+			customer.setEmail((String) e_customer.getProperty("email"));
+			customer.setPassword((String) e_customer.getProperty("password"));
+			customer.setId((Key) e_customer.getKey());
+			
+			
+		 } catch (EntityNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} finally {
 			 if (tx.isActive()) tx.rollback();
-	         pm.close();
+	        
 	     }
 	     return customer;
 	}
-	*/
+	
 	
 	
 	
 	/*Delete customer and all resto asssociated with the user*/
-	/*
+	
 	public static Customer deleteCustomerById(Long id) {
-		Customer customer = null;
-		PersistenceManager pm = DAOHelper.getPersistenceManagerFactory().getPersistenceManager();
-		Transaction tx = pm.currentTransaction();
+		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+		Transaction tx = datastore.beginTransaction();
+		
 		try {
-			tx.begin();
-			//delete customer
-			customer = pm.getObjectById(Customer.class, id);
-			String email = customer.getEmail();
-			pm.deletePersistent(customer);
 			
-			//delete resti
-			Query query = pm.newQuery(Resto.class);
+			//delete customer
+			//find the customer object from datastore by id
+        	Key customersRootKey = KeyFactory.createKey("customersRoot", "customersRootKey");
+        	Key customerKey = KeyFactory.createKey(customersRootKey, "Customer", id);
+        	datastore.delete(customerKey);
+			
+        	//delete all resti
+			/*
+        	Query query = pm.newQuery(Resto.class);
 			query.setFilter("customer == customer_p ");
 			query.declareParameters(Long.class.getName()+" customer_p");
 			//query.declareParameters("String email_p");
@@ -367,16 +383,17 @@ public class RestoDAO {
 			@SuppressWarnings({ "unchecked"})
 			List<AuthToken> tokenList = (List<AuthToken>)query_t.execute(email);
 			pm.deletePersistentAll(tokenList);
-			
+			*/
 			tx.commit();
 		} finally {
-			if (tx.isActive()) tx.rollback();
-            pm.close();
+			if (tx.isActive()) {
+		        tx.rollback();
+		    }
 		}
 	     return null;
 	}
 	
-	*/
+	
 	
 	/*
 	public static Provider deleteProviderById(Long id) {
