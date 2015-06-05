@@ -33,7 +33,7 @@ import static com.google.appengine.api.datastore.FetchOptions.Builder.*;
 
 import com.google.appengine.api.datastore.Transaction;
 
-import static com.google.appengine.api.search.Query.Builder;
+
 
 
 
@@ -42,10 +42,20 @@ public class RestoDAO {
 	
 	/*Customer is saved in the datastore as the following:
 	 * Entity --> Customer
-	 * 				key: "customerRootKey"/customerKey
+	 * 				key: "customersRootKey"/customerKey
 	 * 				email: <email>
 	 * 				password: <password>
 	 * */
+	
+	
+	/*AuthToken is saved in the datastore as the following:
+	 * Entity --> AuthToken
+	 * 				key: "tokensRootKey"/authTokenKey
+	 * 				expiration: <date>
+	 * 				userEmail: <email>
+	 * */
+	
+	
 	//TODO add check on mandatory field (ex. email, pwd) and manage exceptions
 	public static Key addCustomer(Customer customer) throws UniqueConstraintViolationExcpetion, MandatoryFieldException {
 		Key customerId = null;
@@ -155,6 +165,114 @@ public class RestoDAO {
 	}
 	
 	
+	public static Customer getCustomerByEmail(String p_email, String p_password) throws WrongUserOrPasswordException {
+		Customer customer = null;
+		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+		Transaction tx = datastore.beginTransaction();
+		try {
+			Filter emailExistsFilter = new FilterPredicate ("email", FilterOperator.EQUAL, p_email);
+			Query q = new Query("Customer").setFilter(emailExistsFilter);		
+			PreparedQuery pq = datastore.prepare(q);
+			
+			if (pq.countEntities(withLimit(1)) > 0) {
+				
+				//TODO instantiate Customer
+				customer = new Customer();
+				for (Entity result : pq.asIterable()) {
+					customer.setEmail((String) result.getProperty("email"));
+					customer.setPassword((String) result.getProperty("password"));
+					customer.setId((Key) result.getKey());
+				}
+				
+				//check if password is correct
+				if (!(customer.getPassword().equals(p_password)))  throw new WrongUserOrPasswordException("Wrong email user or password");
+				
+			}else {
+					throw new WrongUserOrPasswordException("Wrong email user or password");
+			}
+				
+			tx.commit();
+		} finally {
+		    if (tx.isActive()) {
+		        tx.rollback();
+		    }
+		}
+		
+	     return customer;
+		
+	}
+	
+	public static Customer getCustomerById(Long id) {
+		Customer customer = null;
+		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+		Transaction tx = datastore.beginTransaction();
+		try {
+			Key customersRootKey = KeyFactory.createKey("customersRoot", "customersRootKey");
+        	Key customerKey = KeyFactory.createKey(customersRootKey, "Customer", id);
+			Entity e_customer = datastore.get(customerKey);
+			customer = new Customer();
+			customer.setEmail((String) e_customer.getProperty("email"));
+			customer.setPassword((String) e_customer.getProperty("password"));
+			customer.setId((Key) e_customer.getKey());
+			
+			
+		 } catch (EntityNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} finally {
+			 if (tx.isActive()) tx.rollback();
+	        
+	     }
+	     return customer;
+	}
+	
+	
+	
+	
+	/*Delete customer and all resto asssociated with the user*/
+	
+	public static Customer deleteCustomerById(Long id) {
+		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+		Transaction tx = datastore.beginTransaction();
+		
+		try {
+			
+			//delete customer
+			//find the customer object from datastore by id
+        	Key customersRootKey = KeyFactory.createKey("customersRoot", "customersRootKey");
+        	Key customerKey = KeyFactory.createKey(customersRootKey, "Customer", id);
+        	datastore.delete(customerKey);
+			
+        	//delete all resti
+			/*
+        	Query query = pm.newQuery(Resto.class);
+			query.setFilter("customer == customer_p ");
+			query.declareParameters(Long.class.getName()+" customer_p");
+			//query.declareParameters("String email_p");
+			@SuppressWarnings({ "unchecked"})
+			List<Resto> restiList = (List<Resto>)query.execute(id);
+			pm.deletePersistentAll(restiList);
+			
+			//delete token of the user basing email
+			Query query_t = pm.newQuery(AuthToken.class);
+			
+			query_t.setFilter("userEmail == email_p ");
+			query_t.declareParameters("String email_p");
+			//query.declareParameters("String email_p");
+			@SuppressWarnings({ "unchecked"})
+			List<AuthToken> tokenList = (List<AuthToken>)query_t.execute(email);
+			pm.deletePersistentAll(tokenList);
+			*/
+			tx.commit();
+		} finally {
+			if (tx.isActive()) {
+		        tx.rollback();
+		    }
+		}
+	     return null;
+	}
+	
+	
 	/*
 	//check mandatory field constraint (email and password  on Customer entity)
 	private static void checkMandatoryConstraintProvider(Provider provider) throws MandatoryFieldException {
@@ -237,42 +355,7 @@ public class RestoDAO {
 	
 	
 	
-	public static Customer getCustomerByEmail(String p_email, String p_password) throws WrongUserOrPasswordException {
-		Customer customer = null;
-		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-		Transaction tx = datastore.beginTransaction();
-		try {
-			Filter emailExistsFilter = new FilterPredicate ("email", FilterOperator.EQUAL, p_email);
-			Query q = new Query("Customer").setFilter(emailExistsFilter);		
-			PreparedQuery pq = datastore.prepare(q);
-			
-			if (pq.countEntities(withLimit(1)) > 0) {
-				
-				//TODO instantiate Customer
-				customer = new Customer();
-				for (Entity result : pq.asIterable()) {
-					customer.setEmail((String) result.getProperty("email"));
-					customer.setPassword((String) result.getProperty("password"));
-					customer.setId((Key) result.getKey());
-				}
-				
-				//check if password is correct
-				if (!(customer.getPassword().equals(p_password)))  throw new WrongUserOrPasswordException("Wrong email user or password");
-				
-			}else {
-					throw new WrongUserOrPasswordException("Wrong email user or password");
-			}
-				
-			tx.commit();
-		} finally {
-		    if (tx.isActive()) {
-		        tx.rollback();
-		    }
-		}
-		
-	     return customer;
-		
-	}
+	
 	
 	
 	
@@ -323,75 +406,6 @@ public class RestoDAO {
 	*/
 	
 	
-	public static Customer getCustomerById(Long id) {
-		Customer customer = null;
-		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-		Transaction tx = datastore.beginTransaction();
-		try {
-			Key customersRootKey = KeyFactory.createKey("customersRoot", "customersRootKey");
-        	Key customerKey = KeyFactory.createKey(customersRootKey, "Customer", id);
-			Entity e_customer = datastore.get(customerKey);
-			customer = new Customer();
-			customer.setEmail((String) e_customer.getProperty("email"));
-			customer.setPassword((String) e_customer.getProperty("password"));
-			customer.setId((Key) e_customer.getKey());
-			
-			
-		 } catch (EntityNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} finally {
-			 if (tx.isActive()) tx.rollback();
-	        
-	     }
-	     return customer;
-	}
-	
-	
-	
-	
-	/*Delete customer and all resto asssociated with the user*/
-	
-	public static Customer deleteCustomerById(Long id) {
-		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-		Transaction tx = datastore.beginTransaction();
-		
-		try {
-			
-			//delete customer
-			//find the customer object from datastore by id
-        	Key customersRootKey = KeyFactory.createKey("customersRoot", "customersRootKey");
-        	Key customerKey = KeyFactory.createKey(customersRootKey, "Customer", id);
-        	datastore.delete(customerKey);
-			
-        	//delete all resti
-			/*
-        	Query query = pm.newQuery(Resto.class);
-			query.setFilter("customer == customer_p ");
-			query.declareParameters(Long.class.getName()+" customer_p");
-			//query.declareParameters("String email_p");
-			@SuppressWarnings({ "unchecked"})
-			List<Resto> restiList = (List<Resto>)query.execute(id);
-			pm.deletePersistentAll(restiList);
-			
-			//delete token of the user basing email
-			Query query_t = pm.newQuery(AuthToken.class);
-			
-			query_t.setFilter("userEmail == email_p ");
-			query_t.declareParameters("String email_p");
-			//query.declareParameters("String email_p");
-			@SuppressWarnings({ "unchecked"})
-			List<AuthToken> tokenList = (List<AuthToken>)query_t.execute(email);
-			pm.deletePersistentAll(tokenList);
-			*/
-			tx.commit();
-		} finally {
-			if (tx.isActive()) {
-		        tx.rollback();
-		    }
-		}
-	     return null;
-	}
 	
 	
 	
@@ -513,56 +527,64 @@ public class RestoDAO {
 	}
 	*/
 	
-	/*
+	
 	
 	public static Key addAuthToken(AuthToken token) {
 		Key tokenId = null;
-		PersistenceManager pm = DAOHelper.getPersistenceManagerFactory().getPersistenceManager();
-		Transaction tx = pm.currentTransaction();
+		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+		Transaction tx = datastore.beginTransaction();
 		try {
-			tx.begin();
-        	pm.makePersistent(token);
-            tokenId= token.getTokenId();
-            tx.commit();
-        } catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		
+			Key authTokensRootKey = KeyFactory.createKey("authTokensRoot", "authTokensRootKey");
+	        
+			Entity e_authToken = new Entity("AuthToken", authTokensRootKey);
+		
+			e_authToken.setProperty("userEmail", token.getUserEmail());
+			e_authToken.setProperty("expiration", token.getExpiration());
+		
+		
+			datastore.put(e_authToken);
+			tokenId = e_authToken.getKey();
+			tx.commit();
 		} finally {
-			if (tx.isActive()) tx.rollback();
-            pm.close();
-        }
-       
-        return tokenId;
+		    if (tx.isActive()) {
+		        tx.rollback();
+		    }
+		}
+		return tokenId;			
+		
 	}
-	*/
+	
 	
 	
 	/*Check if token exists, is not expired and is associated to the userEmail*/
-	/*
+	
 	public static void checkAuthToken(Long tokenId, String userEmail) throws InvalidTokenException, InvalidTokenForUserException {
-		AuthToken token=null;
-		PersistenceManager pm = DAOHelper.getPersistenceManagerFactory().getPersistenceManager();
-		Transaction tx= pm.currentTransaction();
+		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+		Transaction tx = datastore.beginTransaction();
 		try {
-			tx.begin();
-			token = pm.getObjectById(AuthToken.class, tokenId);
+			Key authTokensRootKey = KeyFactory.createKey("authTokensRoot", "authTokensRootKey");
+			Key authTokenKey = KeyFactory.createKey(authTokensRootKey, "AuthToken", tokenId);
+			Entity e_authToken = datastore.get(authTokenKey);
 			
 			
 			
-			if (!token.getUserEmail().equals(userEmail)) throw new InvalidTokenForUserException("Token invalid "+tokenId);
 			
-			if (new Date().after(token.getExpiration())) throw new InvalidTokenException("Token is expired "+tokenId);
+			if (!e_authToken.getProperty("userEmail").equals(userEmail)) throw new InvalidTokenForUserException("Token invalid "+tokenId);
+			
+			if (new Date().after(((Date)e_authToken.getProperty("expiration")))) throw new InvalidTokenException("Token is expired "+tokenId);
 			tx.commit();
-		}catch (JDOObjectNotFoundException e)  {
 		
-			throw new InvalidTokenException("Token invalid "+tokenId);
 		
+		} catch (EntityNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			throw new InvalidTokenForUserException("Token invalid "+tokenId);
 		}finally {
 			if (tx.isActive()) tx.rollback();
-			pm.close();
-			
+					
 		}
 	}
-	*/
+	
 	
 }

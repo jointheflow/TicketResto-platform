@@ -5,30 +5,19 @@ package gr.ticketrestoserver.dao.entity;
 import java.util.Date;
 
 
-import javax.jdo.annotations.IdGeneratorStrategy;
-import javax.jdo.annotations.PersistenceCapable;
-import javax.jdo.annotations.Persistent;
-import javax.jdo.annotations.PrimaryKey;
-
-
-
-
-
-
 import com.google.appengine.api.datastore.Key;
 
-@PersistenceCapable
+
 public class AuthToken {
 	
 	
-	@PrimaryKey
-	@Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
+	
 	private Key tokenId;
 
-	@Persistent
+	
 	private String userEmail;
 	
-	@Persistent
+	
 	private Date expiration;
 
 	public String getUserEmail() {
@@ -41,6 +30,10 @@ public class AuthToken {
 
 	public Date getExpiration() {
 		return expiration;
+	}
+
+	public void setTokenId(Key tokenId) {
+		this.tokenId = tokenId;
 	}
 
 	public void setExpiration(Date expiration) {
