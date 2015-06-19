@@ -1,47 +1,40 @@
 package gr.ticketrestoserver.dao.entity;
 
-import javax.jdo.annotations.IdGeneratorStrategy;
-import javax.jdo.annotations.PersistenceCapable;
-import javax.jdo.annotations.Persistent;
-import javax.jdo.annotations.PrimaryKey;
-import javax.jdo.annotations.Unique;
 
 import com.google.appengine.api.datastore.Key;
 
 
-@PersistenceCapable
+
 public class Provider {
 
-	@PrimaryKey
-	@Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
+	
 	private Key id;
 	
-	@Persistent 
+
 	private String name;
 	
-	@Unique
-	@Persistent
+	
 	private String email;
 	
-	@Persistent 
+	
 	private String password;
 	
-	@Persistent
+	
 	private String address;
 	
-	@Persistent
+	
 	private String cap;
 	
 	//comune
-	@Persistent
+	
 	private String district;
 	
 	//provincia
-	@Persistent
+	
 	private String region;
 	
 	//nazione
-	@Persistent
+	
 	private String country;
 
 	public String getName() {
@@ -110,6 +103,10 @@ public class Provider {
 
 	public Key getId() {
 		return id;
+	}
+
+	public void setId(Key id) {
+		this.id = id;
 	}
 	
 	

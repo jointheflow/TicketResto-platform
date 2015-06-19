@@ -2,44 +2,33 @@ package gr.ticketrestoserver.dao.entity;
 
 import java.util.Date;
 
-import javax.jdo.annotations.IdGeneratorStrategy;
-import javax.jdo.annotations.PersistenceCapable;
-import javax.jdo.annotations.Persistent;
-import javax.jdo.annotations.PrimaryKey;
-
 import com.google.appengine.api.datastore.Key;
-import com.google.appengine.datanucleus.annotations.Owned;
-import com.google.appengine.datanucleus.annotations.Unowned;
 
-@PersistenceCapable
+
+
 public class Resto {
 	
-	@PrimaryKey
-	@Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
+	
 	private Key id;
 	
-	//@Persistent
-	@Persistent(defaultFetchGroup="true")
-	@Unowned
+	
 	private Provider provider;
 	
 	
-	//@Persistent
-	@Persistent(defaultFetchGroup="true")
-	@Unowned
+	
 	private Customer customer;
 	
 	public Customer getCustomer() {
 		return customer;
 	}
 
-	@Persistent
+	
 	private Date expirationDate;
 	
-	@Persistent
+	
 	private Double amount;
 	
-	@Persistent
+	
 	private String providerSignature;
 	
 	
@@ -84,6 +73,10 @@ public class Resto {
 	public void setCustomer(Customer customer) {
 		
 		this.customer=customer;
+	}
+
+	public void setId(Key id) {
+		this.id = id;
 	}
 
 	

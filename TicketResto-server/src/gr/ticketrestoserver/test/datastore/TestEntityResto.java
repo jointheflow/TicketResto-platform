@@ -1,4 +1,4 @@
-package gr.ticketrestoserver.test;
+package gr.ticketrestoserver.test.datastore;
 
 import static org.junit.Assert.*;
 

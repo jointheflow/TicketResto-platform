@@ -43,20 +43,39 @@ public class RestoDAO {
 	/*Customer is saved in the datastore as the following:
 	 * Entity --> Customer
 	 * 				key: "customersRootKey"/customerKey
-	 * 				email: <email>
-	 * 				password: <password>
+	 * 				email: String <email>
+	 * 				password: String <password>
 	 * */
 	
-	
+	/*Provider is saved in the datastore as the following:
+	 * Entity --> Provider
+	 * 				key: "providersRootKey"/providerKey
+	 *				name: String
+	 *				email: String
+	 *				password: String
+	 *				address: String
+	 *				cap: String
+	 *				district: String
+	 *				region: String
+	 *				country: String
+	*/			
+		
 	/*AuthToken is saved in the datastore as the following:
 	 * Entity --> AuthToken
 	 * 				key: "tokensRootKey"/authTokenKey
-	 * 				expiration: <date>
-	 * 				userEmail: <email>
+	 * 				expiration: Date <date>
+	 * 				userEmail: String <email>
+	 * */
+	
+	/*Resto is saved in the datastore as the following:
+	 * Entity --> Resto
+	 * 				key: customerKey/restoKey
+	 * 				expiration: Date <date>
+	 * 				amount: Double 
+	 * 				provider: key
 	 * */
 	
 	
-	//TODO add check on mandatory field (ex. email, pwd) and manage exceptions
 	public static Key addCustomer(Customer customer) throws UniqueConstraintViolationExcpetion, MandatoryFieldException {
 		Key customerId = null;
 		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
@@ -273,50 +292,70 @@ public class RestoDAO {
 	}
 	
 	
-	/*
+	
 	//check mandatory field constraint (email and password  on Customer entity)
 	private static void checkMandatoryConstraintProvider(Provider provider) throws MandatoryFieldException {
 		if (provider.getEmail() == null || provider.getPassword()==null || provider.getName()==null)
 				throw new MandatoryFieldException("email, password and name are mandatory!");
 		
 	}
-	*/
 	
-	/*
-	//TODO add check on mandatory field (ex. email, pwd) and manage exceptions
+	
+	
+	//Add a provider
 	public static Key addProvider(Provider provider) throws MandatoryFieldException, UniqueConstraintViolationExcpetion {
-		Key providerId=null;
-		PersistenceManager pm = DAOHelper.getPersistenceManagerFactory().getPersistenceManager();
-        Transaction tx = pm.currentTransaction();
+		Key providerId = null;
+		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+		Transaction tx = datastore.beginTransaction();
 		try {
-			tx.begin();
-        	checkMandatoryConstraintProvider(provider);
-        	checkUniqueConstraintProvider(pm, provider);
-        	pm.makePersistent(provider);
-            providerId= provider.getId();
-            tx.commit();
+			checkMandatoryConstraintProvider(provider);
+        	checkUniqueConstraintProvider(datastore, provider.getEmail());
+			Key providersRootKey = KeyFactory.createKey("providersRoot", "providersRootKey");
+	        
+			Entity e_provider = new Entity("Provider", providersRootKey);
+		
+			e_provider.setProperty("email", provider.getEmail());
+			e_provider.setProperty("password", provider.getPassword());
+			e_provider.setProperty("address", provider.getAddress());
+			e_provider.setProperty("cap", provider.getCap());
+			e_provider.setProperty("name", provider.getName());
+			e_provider.setProperty("district", provider.getDistrict());
+			e_provider.setProperty("region", provider.getRegion());
+			e_provider.setProperty("country", provider.getCountry());
+			
+		
+		
+			datastore.put(e_provider);
+			providerId = e_provider.getKey();
+			tx.commit();
 		} finally {
-			if (tx.isActive()) tx.rollback();
-            pm.close();
-        }
+		    if (tx.isActive()) {
+		        tx.rollback();
+		    }
+		}
+		
+        	
         return providerId;
 	}
-*/
+
 	
-	/*
-	//check unique constraint (email on Provider entity)
-		private static void checkUniqueConstraintProvider(PersistenceManager pm, Provider provider) throws UniqueConstraintViolationExcpetion{
-			Query query = pm.newQuery(Provider.class);
-			query.setFilter("email == email_p");
-			query.declareParameters("String email_p");
-			@SuppressWarnings("unchecked")
-			List<Provider> result = (List<Provider>)query.execute(provider.getEmail());
-			if (!result.isEmpty())
-				throw new UniqueConstraintViolationExcpetion("Provider with email "+provider.getEmail()+ " already exists!");
-		
-		}
 	
-		*/
+	//check unique constraint (email on Provider entity) STRONG CONSISTENCY
+	private static void checkUniqueConstraintProvider(DatastoreService p_datastore, String p_email) throws UniqueConstraintViolationExcpetion{
+		//We use an ancestor to guarantee STRONG CONSISTENCY
+		Key providersRootKey = KeyFactory.createKey("providersRoot", "providersRootKey");
+    	Filter emailExistsFilter = new FilterPredicate ("email", FilterOperator.EQUAL, p_email);
+    	Query q = new Query("Provider", providersRootKey)
+    	                    .setAncestor(providersRootKey)
+    	                    .setFilter(emailExistsFilter);
+    
+			
+		PreparedQuery pq = p_datastore.prepare(q);
+		if (pq.countEntities(withLimit(1)) > 0) 
+			throw new UniqueConstraintViolationExcpetion("Provider with email "+p_email+ " already exists!");
+	}
+	
+	
 	
 	/*
 	public static Key updateResto(Resto resto) {
@@ -359,33 +398,51 @@ public class RestoDAO {
 	
 	
 	
-	/*
-	public static Provider getProviderByEmail(String email, String password) throws WrongUserOrPasswordException {
-		Provider provider = null;
-		PersistenceManager pm = DAOHelper.getPersistenceManagerFactory().getPersistenceManager();
-		Transaction tx = pm.currentTransaction();
+	
+	public static Provider getProviderByEmail(String p_email, String p_password) throws WrongUserOrPasswordException {
+        Provider provider = null;
+		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+		Transaction tx = datastore.beginTransaction();
 		try {
-			tx.begin();
-			Query query = pm.newQuery(Provider.class);
-			query.setFilter("email == email_p");
-			query.declareParameters("String email_p");
-			@SuppressWarnings({ "unchecked"})
-			List<Provider> result = (List<Provider>)query.execute(email);
+			Filter emailExistsFilter = new FilterPredicate ("email", FilterOperator.EQUAL, p_email);
+			Query q = new Query("Provider").setFilter(emailExistsFilter);		
+			PreparedQuery pq = datastore.prepare(q);
 			
-			if (!result.isEmpty()) {
-				provider = result.get(0);
-				if (!(provider.getPassword().equals(password)))  throw new WrongUserOrPasswordException("Wrong email user or password");
+			if (pq.countEntities(withLimit(1)) > 0) {
+				
+				//TODO instantiate Customer
+				provider = new Provider();
+				for (Entity result : pq.asIterable()) {
+					provider.setName((String) result.getProperty("name"));
+					provider.setEmail((String) result.getProperty("email"));
+					provider.setPassword((String) result.getProperty("password"));
+					provider.setId((Key) result.getKey());
+					provider.setAddress((String) result.getProperty("address"));
+					provider.setCap((String) result.getProperty("cap"));
+					provider.setDistrict((String) result.getProperty("district"));
+					provider.setRegion((String) result.getProperty("region"));
+					provider.setCountry((String) result.getProperty("country"));
+											
+				}
+				
+				//check if password is correct
+				if (!(provider.getPassword().equals(p_password)))  throw new WrongUserOrPasswordException("Wrong email user or password");
+				
 			}else {
-				throw new WrongUserOrPasswordException("Wrong email user or password");
+					throw new WrongUserOrPasswordException("Wrong email user or password");
 			}
+				
 			tx.commit();
-		 } finally {
-			 if (tx.isActive()) tx.rollback();
-	         pm.close();
-	        }
-	        return provider;
+		} finally {
+		    if (tx.isActive()) {
+		        tx.rollback();
+		    }
+		}
+		
+	     return provider;
+		
 	}
-	*/
+	
 	
 	/*
 	
