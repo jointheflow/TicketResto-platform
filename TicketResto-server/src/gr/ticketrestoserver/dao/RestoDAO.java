@@ -3,9 +3,12 @@ package gr.ticketrestoserver.dao;
 
 
 
+
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
+import sun.font.CompositeFont;
 import gr.ticketrestoserver.dao.entity.AuthToken;
 import gr.ticketrestoserver.dao.entity.Customer;
 import gr.ticketrestoserver.dao.entity.Provider;
@@ -23,6 +26,8 @@ import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.EntityNotFoundException;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
+import com.google.appengine.api.datastore.Query.CompositeFilter;
+import com.google.appengine.api.datastore.Query.CompositeFilterOperator;
 import com.google.appengine.api.datastore.Query.Filter;
 import com.google.appengine.api.datastore.Query.FilterOperator;
 import com.google.appengine.api.datastore.Query.FilterPredicate;
@@ -32,6 +37,7 @@ import com.google.appengine.api.datastore.PreparedQuery;
 import static com.google.appengine.api.datastore.FetchOptions.Builder.*;
 
 import com.google.appengine.api.datastore.Transaction;
+
 
 
 
@@ -69,9 +75,10 @@ public class RestoDAO {
 	
 	/*Resto is saved in the datastore as the following:
 	 * Entity --> Resto
-	 * 				key: customerKey/restoKey
+	 * 				key: "restoRootKey"/restoKey
 	 * 				expiration: Date <date>
 	 * 				amount: Double 
+	 * 				customer: key
 	 * 				provider: key
 	 * */
 	
@@ -195,7 +202,7 @@ public class RestoDAO {
 			
 			if (pq.countEntities(withLimit(1)) > 0) {
 				
-				//TODO instantiate Customer
+				//instantiate Customer
 				customer = new Customer();
 				for (Entity result : pq.asIterable()) {
 					customer.setEmail((String) result.getProperty("email"));
@@ -357,47 +364,53 @@ public class RestoDAO {
 	
 	
 	
-	/*
-	public static Key updateResto(Resto resto) {
+	/*Giving a resto parameter execute an add or update methon to the entity level*/
+	public static Key addOrUpdateResto(Resto resto) {
 		Key restoId=null;
-		Resto restoObj = null;
-		PersistenceManager pm = DAOHelper.getPersistenceManagerFactory().getPersistenceManager();
-        Transaction tx = pm.currentTransaction();
+		Entity e_resto = null;
+		
+		
+		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+		Transaction tx = datastore.beginTransaction();
         
 		try {
-			tx.begin();
-        	//if resto has not an id, make it persistent because is a new resto
-        	if (resto.getId() ==null) {
-        		pm.makePersistent(resto);
-        		restoId=resto.getId();
-        	}
-        	else {
-	        	//retrieve resto instance by using the provider-customer key
-	        	restoObj = pm.getObjectById(Resto.class, resto.getId());
-	        	//if not exists make persistence the new instance
-	        	//if (restoObj == null)       	    			
-	            	//pm.makePersistent(resto);
-	        	//set new value
-	        	restoObj.setAmount(resto.getAmount());
-	        	
-        	}
-        	tx.commit();
-    			
-        } finally {
-        	if (tx.isActive()) tx.rollback();
-            pm.close();
-        }
+			/*Check if resto.id is null. If is null means that there is not a resto
+			 * instance so we call add method. Otherwise we call update.*/
+			
+			/*add a new resto*/
+			if (resto.getId() == null) {
+				//create entity resto with ancestor path as customer	        
+				Key restosRootKey = KeyFactory.createKey("restosRoot", "restosRootKey");
+				e_resto = new Entity("Resto", restosRootKey);
+			}
+			/*update resto instance*/
+			else {
+				e_resto = datastore.get(resto.getId());
+			}
+			//set properties for resto
+			e_resto.setProperty("customer", resto.getCustomer().getId());
+			e_resto.setProperty("provider", resto.getProvider().getId());
+			e_resto.setProperty("expiration", resto.getExpirationDate());
+			e_resto.setProperty("amount", resto.getAmount());
+			
+			datastore.put(e_resto);
+			restoId = e_resto.getKey();
+			tx.commit();
+			
+			
+		} catch (EntityNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			
+		} finally {
+		    if (tx.isActive()) {
+		        tx.rollback();
+		    }
+		}
+		
+        	
         return restoId;
 	}
-	
-	*/
-	
-	
-	
-	
-	
-	
-	
 	
 	public static Provider getProviderByEmail(String p_email, String p_password) throws WrongUserOrPasswordException {
         Provider provider = null;
@@ -410,7 +423,7 @@ public class RestoDAO {
 			
 			if (pq.countEntities(withLimit(1)) > 0) {
 				
-				//TODO instantiate Customer
+				
 				provider = new Provider();
 				for (Entity result : pq.asIterable()) {
 					provider.setName((String) result.getProperty("name"));
@@ -497,35 +510,45 @@ public class RestoDAO {
 	*/
 	
 	
-	/*
-	public static Resto getResto(Long customerId, Long providerId) {
+	
+	public static Resto getResto(Key customerId, Key providerId) {
 		Resto resto = null;
-		PersistenceManager pm = DAOHelper.getPersistenceManagerFactory().getPersistenceManager();
-		Transaction tx = pm.currentTransaction();
+		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+		Transaction tx = datastore.beginTransaction();
 		try {
-			tx.begin();
-			pm.getFetchPlan().setGroup(FetchGroup.ALL);
-			Query query = pm.newQuery(Resto.class);
-			//query.setFilter("customer == customer_p && provider == provider_p");
-			query.setFilter("provider == provider_p && customer == customer_p ");
-			query.declareParameters(Long.class.getName() + " provider_p, "+Long.class.getName()+" customer_p");
-			//query.declareParameters("String email_p");
-			@SuppressWarnings({ "unchecked"})
-			//List<Resto> result = (List<Resto>)query.execute(customer, provider);
-			List<Resto> result = (List<Resto>)query.execute(providerId, customerId);
-			if (!result.isEmpty())
-				resto = result.get(0);
-			tx.commit();
+			//create a composite filter in AND condition that find by customer and provider key
+			Filter customerKeyFilter = new FilterPredicate ("customer", FilterOperator.EQUAL, customerId);
+			Filter providerKeyFilter = new FilterPredicate ("provider", FilterOperator.EQUAL, providerId);
+			CompositeFilter customerAndProviderFilter =					
+					new CompositeFilter(CompositeFilterOperator.AND, Arrays.<Filter>asList(customerKeyFilter,providerKeyFilter));
+								 
+					
+			Query q = new Query("Resto").setFilter(customerAndProviderFilter);		
+			PreparedQuery pq = datastore.prepare(q);
 			
-		 } finally {
-			 if (tx.isActive()) tx.rollback();
-			 pm.close();
-	        }
-	        return resto;
-		
-		
+			if (pq.countEntities(withLimit(1)) > 0) {
+				
+				//instantiate Resto
+				resto = new Resto();
+				for (Entity result : pq.asIterable()) {
+					
+					resto.setId((Key) result.getKey());
+					resto.setAmount((Double)result.getProperty("amount"));
+					resto.setExpirationDate((Date) result.getProperty("expiration"));
+					//resto.setCustomer(customer);((Key) result.getProperty("customer"));
+					//resto.setProvider....
+					//TODO
+				}
+			}	
+			tx.commit();
+		} finally {
+			if (tx.isActive()) {
+			    tx.rollback();
+			 }
+		}
+		return resto;
 	}
-	*/
+	
 	
 	/*
 	public static List<Resto> getResto(Long customerId) {
