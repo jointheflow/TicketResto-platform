@@ -98,7 +98,7 @@ public class TestEntityResto {
 		resto_new.setProvider(testProviderB);
 		resto_new.setCustomer(testCustomer);
 		//persists resto_new
-		idResto = RestoDAO.addOrUpdateResto(resto_new);
+		idResto = RestoDAO.updateResto(resto_new);
 		System.out.println("resto id:"+idResto+" provider id:"+resto_new.getProvider().getId()+" customer id:"+resto_new.getCustomer().getId()+" updated!"+resto_new);
 		
   		
@@ -138,7 +138,7 @@ public class TestEntityResto {
 		System.out.println("Find customer by email "+testCustomerEmail+" "+ customer);
 		
 		//add resto to the customer for providerA.
-		//befor fetch a resto if exists
+		//prior fecth a resto if exists
 		Resto resto = RestoDAO.getResto(customer.getId().getId(), providerA.getId().getId());
 		//resto should not exists
 		assertTrue(resto==null);
