@@ -1,16 +1,16 @@
 package gr.ticketrestoserver.rest.resource;
 
-import gr.ticketrestoserver.dao.RestoDAO;
 import gr.ticketrestoserver.dao.entity.Customer;
 import gr.ticketrestoserver.dao.entity.Provider;
 import gr.ticketrestoserver.dao.entity.Resto;
-import gr.ticketrestoserver.dao.exception.InvalidTokenException;
 import gr.ticketrestoserver.dao.exception.InvalidTokenForUserException;
 import gr.ticketrestoserver.dto.ProviderDTO;
 import gr.ticketrestoserver.dto.RestoDTO;
 
 import java.util.logging.Logger;
 
+import org.gianluca.logbook.dao.exception.InvalidTokenException;
+import org.gianluca.logbook.dao.googledatastore.entity.RestoDAO;
 import org.restlet.representation.Representation;
 import org.restlet.resource.*; 
 import org.restlet.data.Form;

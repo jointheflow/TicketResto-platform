@@ -1,6 +1,5 @@
 package gr.ticketrestoserver.rest.resource;
 
-import gr.ticketrestoserver.dao.RestoDAO;
 import gr.ticketrestoserver.dao.entity.AuthToken;
 import gr.ticketrestoserver.dao.entity.Provider;
 import gr.ticketrestoserver.dao.exception.MandatoryFieldException;
@@ -11,6 +10,7 @@ import gr.ticketrestoserver.helper.UtilHelper;
 
 import java.util.logging.Logger;
 
+import org.gianluca.logbook.dao.googledatastore.entity.RestoDAO;
 import org.restlet.representation.Representation;
 import org.restlet.resource.*; 
 import org.restlet.data.Form;
