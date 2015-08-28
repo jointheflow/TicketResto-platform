@@ -1,7 +1,6 @@
 package gr.ticketrestoserver.test.datastore;
 
 import static org.junit.Assert.*;
-import gr.ticketrestoserver.dao.RestoDAO;
 
 
 
@@ -10,6 +9,7 @@ import gr.ticketrestoserver.dao.entity.Provider;
 import gr.ticketrestoserver.dao.exception.MandatoryFieldException;
 import gr.ticketrestoserver.dao.exception.UniqueConstraintViolationExcpetion;
 
+import org.gianluca.logbook.dao.googledatastore.entity.RestoDAO;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

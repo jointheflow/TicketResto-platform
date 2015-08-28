@@ -1,7 +1,6 @@
 package gr.ticketrestoserver.servlet;
 
 
-import gr.ticketrestoserver.dao.RestoDAO;
 import gr.ticketrestoserver.dao.entity.Customer;
 import gr.ticketrestoserver.dao.entity.Provider;
 import gr.ticketrestoserver.dao.entity.Resto;
@@ -9,6 +8,8 @@ import gr.ticketrestoserver.dao.entity.Resto;
 import java.io.IOException;
 
 import javax.servlet.http.*;
+
+import org.gianluca.logbook.dao.googledatastore.entity.RestoDAO;
 
 import com.google.appengine.api.datastore.Key;
 

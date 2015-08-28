@@ -8,11 +8,11 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
-import gr.ticketrestoserver.dao.RestoDAO;
 import gr.ticketrestoserver.dao.entity.AuthToken;
-import gr.ticketrestoserver.dao.exception.InvalidTokenException;
 import gr.ticketrestoserver.dao.exception.InvalidTokenForUserException;
 
+import org.gianluca.logbook.dao.exception.InvalidTokenException;
+import org.gianluca.logbook.dao.googledatastore.entity.RestoDAO;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

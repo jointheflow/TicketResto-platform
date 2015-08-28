@@ -4,7 +4,6 @@ import static org.junit.Assert.*;
 
 import java.util.List;
 
-import gr.ticketrestoserver.dao.RestoDAO;
 import gr.ticketrestoserver.dao.entity.AuthToken;
 import gr.ticketrestoserver.dao.entity.Customer;
 import gr.ticketrestoserver.dao.entity.Provider;
@@ -13,6 +12,7 @@ import gr.ticketrestoserver.dao.exception.MandatoryFieldException;
 import gr.ticketrestoserver.dao.exception.UniqueConstraintViolationExcpetion;
 import gr.ticketrestoserver.dao.exception.WrongUserOrPasswordException;
 
+import org.gianluca.logbook.dao.googledatastore.entity.RestoDAO;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
